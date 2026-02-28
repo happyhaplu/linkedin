@@ -1,0 +1,35 @@
+#!/bin/bash
+
+echo "=========================================="
+echo "FIX: Add missing connection_profile_id column"
+echo "=========================================="
+echo ""
+echo "The network_connections table is missing the 'connection_profile_id' column."
+echo "You need to add it manually via Supabase SQL Editor."
+echo ""
+echo "STEP 1: Open Supabase SQL Editor"
+echo "----------------------------------------"
+echo "🔗 https://app.supabase.com/project/rlsyvgjcxxoregwrwuzf/sql/new"
+echo ""
+echo "STEP 2: Copy and paste this SQL:"
+echo "----------------------------------------"
+cat << 'EOF'
+ALTER TABLE network_connections
+ADD COLUMN IF NOT EXISTS connection_profile_id TEXT;
+EOF
+echo "----------------------------------------"
+echo ""
+echo "STEP 3: Click 'RUN' button"
+echo ""
+echo "STEP 4: Verify it worked - you should see:"
+echo "  'ALTER TABLE' or 'column already exists'"
+echo ""
+echo "STEP 5: Restart your dev server:"
+echo "  Ctrl+C to stop"
+echo "  pnpm dev"
+echo ""
+echo "=========================================="
+echo ""
+read -p "Press ENTER after you've run the SQL in Supabase..."
+echo ""
+echo "✅ Great! Now restarting your dev server..."

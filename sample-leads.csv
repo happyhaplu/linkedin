@@ -1,0 +1,11 @@
+first_name,last_name,email,company,position,linkedin_url,location
+John,Doe,john.doe@example.com,TechCorp,Software Engineer,https://linkedin.com/in/johndoe,San Francisco
+Jane,Smith,jane.smith@example.com,StartupXYZ,Product Manager,https://linkedin.com/in/janesmith,New York
+Michael,Johnson,mike@company.com,Enterprise Inc,CTO,https://linkedin.com/in/michaelj,Seattle
+Sarah,Williams,sarah.w@email.com,Innovation Labs,Lead Designer,https://linkedin.com/in/sarahw,Austin
+David,Brown,david.brown@example.com,FinTech Solutions,VP Engineering,https://linkedin.com/in/davidb,Boston
+Emily,Davis,emily.d@startup.io,GrowthCo,Marketing Director,https://linkedin.com/in/emilyd,Los Angeles
+Robert,Miller,robert.m@company.com,CloudSystems,DevOps Engineer,https://linkedin.com/in/robertm,Chicago
+Lisa,Anderson,lisa.a@enterprise.com,DataCorp,Data Scientist,https://linkedin.com/in/lisaa,Denver
+James,Taylor,james.t@example.com,AI Ventures,ML Engineer,https://linkedin.com/in/jamest,Miami
+Jennifer,Thomas,jen.thomas@company.com,SaaS Platform,Sales Lead,https://linkedin.com/in/jent,Portland

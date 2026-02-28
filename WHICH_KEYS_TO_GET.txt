@@ -1,0 +1,64 @@
+===============================================
+SUPABASE KEYS - WHAT YOU NEED
+===============================================
+
+Go to this URL in your browser:
+https://app.supabase.com/project/rlsyvgjcxxoregwrwuzf/settings/api
+
+You will see a page titled "API Settings"
+
+Look for a section called "Project API keys"
+
+You need TWO keys from there:
+
+1. **anon / public key**
+   - Label: "anon public"
+   - This is a long string starting with: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+   - Copy the ENTIRE key (it's about 300+ characters long)
+   - This goes in: NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+2. **service_role / secret key**  
+   - Label: "service_role secret"
+   - WARNING: This shows a "Reveal" button - click it to see the key
+   - Also starts with: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+   - Copy the ENTIRE key (also about 300+ characters long)
+   - This goes in: SUPABASE_SERVICE_ROLE_KEY
+
+===============================================
+WHAT EACH KEY DOES:
+===============================================
+
+NEXT_PUBLIC_SUPABASE_ANON_KEY:
+- Used for client-side authentication (browser/frontend)
+- Safe to expose in browser
+- Used when users login/signup
+
+SUPABASE_SERVICE_ROLE_KEY:
+- Used for server-side operations
+- NEVER expose to browser
+- Has admin privileges
+- Used for database operations from your backend
+
+===============================================
+YOUR PROJECT DETAILS:
+===============================================
+
+Project Reference: rlsyvgjcxxoregwrwuzf
+Supabase URL: https://rlsyvgjcxxoregwrwuzf.supabase.co
+Database: db.dyaicmlhvpmkcivlmcgn.supabase.co
+
+The URL and database details are CORRECT.
+Only the API keys are invalid/expired.
+
+===============================================
+AFTER YOU GET THE KEYS:
+===============================================
+
+Option 1 - Run the script:
+./update-supabase-keys.sh
+
+Option 2 - Update manually:
+Edit .env.local and replace the two keys
+Then run: rm -rf .next && pnpm dev
+
+===============================================

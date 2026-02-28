@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Cookie Extractor Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0077b5;
+            margin-bottom: 10px;
+        }
+        .step {
+            background: #f9f9f9;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #0077b5;
+            border-radius: 5px;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .cookie-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 How to Connect Your LinkedIn Account</h1>
+        <p>Follow these steps to safely extract your LinkedIn session cookie and connect your account:</p>
+
+        <div class="warning">
+            <strong>⚠️ Important:</strong> Never share your LinkedIn cookies with untrusted sources. These cookies give access to your LinkedIn account.
+        </div>
+
+        <div class="step">
+            <h3>Step 1: Login to LinkedIn</h3>
+            <p>1. Open a new tab and go to <a href="https://www.linkedin.com" target="_blank">linkedin.com</a></p>
+            <p>2. Log in with your email and password (complete any 2FA if required)</p>
+            <p>3. Make sure you're logged in successfully</p>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Open Developer Tools</h3>
+            <p>While on LinkedIn.com:</p>
+            <p>• <strong>Windows/Linux:</strong> Press <code>F12</code> or <code>Ctrl + Shift + I</code></p>
+            <p>• <strong>Mac:</strong> Press <code>Cmd + Option + I</code></p>
+            <p>• Or right-click anywhere and select "Inspect"</p>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Go to Application/Storage Tab</h3>
+            <p>1. In the Developer Tools, click on the <strong>"Application"</strong> tab (Chrome) or <strong>"Storage"</strong> tab (Firefox)</p>
+            <p>2. In the left sidebar, expand <strong>"Cookies"</strong></p>
+            <p>3. Click on <code>https://www.linkedin.com</code></p>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Find the li_at Cookie</h3>
+            <p>1. Look for a cookie named <code>li_at</code> in the list</p>
+            <p>2. Click on it to see the full value</p>
+            <p>3. The value looks something like this:</p>
+            <div class="cookie-box">
+AQEDATg4MTk3NjAwAAABjVm9R8AAAAGNWcBLwAAAAC....(very long string)
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Step 5: Copy the Cookie Value</h3>
+            <p>1. Double-click on the <code>li_at</code> cookie value to select it</p>
+            <p>2. Copy it (<code>Ctrl+C</code> or <code>Cmd+C</code>)</p>
+            <p>3. Go back to the LinkedIn Accounts page</p>
+            <p>4. Click "Connect Account" and paste the cookie value</p>
+        </div>
+
+        <div class="step">
+            <h3>Step 6: (Optional) Get JSESSIONID Cookie</h3>
+            <p>For better stability, also copy the <code>JSESSIONID</code> cookie:</p>
+            <p>1. Find <code>JSESSIONID</code> in the same cookies list</p>
+            <p>2. Copy its value</p>
+            <p>3. Paste it when prompted in the connection form</p>
+        </div>
+
+        <div class="warning">
+            <strong>✅ Security Tips:</strong>
+            <ul style="margin: 10px 0 0 20px;">
+                <li>Only use this on your own LinkedIn account</li>
+                <li>Never share these cookies publicly</li>
+                <li>Change your LinkedIn password if cookies are compromised</li>
+                <li>Cookies expire - you may need to reconnect accounts periodically</li>
+            </ul>
+        </div>
+
+        <p style="margin-top: 30px; text-align: center; color: #666;">
+            <small>This is how HeyReach, Expandi, and other LinkedIn automation tools work.</small>
+        </p>
+    </div>
+</body>
+</html>
