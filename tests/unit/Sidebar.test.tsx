@@ -1,5 +1,6 @@
+import React from 'react'
 import { render, screen } from '@testing-library/react'
-import Sidebar from '@/components/Sidebar'
+import Sidebar from '../../components/Sidebar'
 import { usePathname } from 'next/navigation'
 
 // Mock Next.js navigation
@@ -36,7 +37,7 @@ jest.mock('../../lib/supabase/client', () => ({
 
 describe('Sidebar', () => {
   beforeEach(() => {
-    ;(usePathname as jest.Mock).mockReturnValue('/dashboard')
+    ;(usePathname as jest.Mock).mockReturnValue('/analytics')
     ;(require('next/navigation').useRouter as jest.Mock).mockReturnValue({
       push: jest.fn(),
       replace: jest.fn(),
@@ -47,21 +48,20 @@ describe('Sidebar', () => {
   it('renders all menu items', () => {
     render(<Sidebar />)
 
-    expect(screen.getByText('Dashboard')).toBeInTheDocument()
+    expect(screen.getByText('Analytics')).toBeInTheDocument()
     expect(screen.getByText('Linkedin Account')).toBeInTheDocument()
     expect(screen.getByText('Leads')).toBeInTheDocument()
     expect(screen.getByText('Campaigns')).toBeInTheDocument()
     expect(screen.getByText('My Network')).toBeInTheDocument()
     expect(screen.getByText('Unibox')).toBeInTheDocument()
-    expect(screen.getByText('Analytics')).toBeInTheDocument()
   })
 
   it('highlights active menu item', () => {
     render(<Sidebar />)
 
-    const dashboardLink = screen.getByText('Dashboard').closest('a')
-    expect(dashboardLink).toHaveClass('bg-blue-50')
-    expect(dashboardLink).toHaveClass('text-blue-600')
+    const analyticsLink = screen.getByText('Analytics').closest('a')
+    expect(analyticsLink).toHaveClass('bg-blue-50')
+    expect(analyticsLink).toHaveClass('text-blue-600')
   })
 
   it('renders logo and branding', () => {
