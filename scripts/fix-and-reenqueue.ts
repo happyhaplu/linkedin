@@ -1,15 +1,12 @@
 /**
  * Fix + re-enqueue: clears wrong jobs, fixes sender_id in DB, re-enqueues with real account
  */
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 import { Queue } from 'bullmq'
 import { Redis } from 'ioredis'
 import { startCampaign } from '../lib/campaign-executor'
 
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const sb = new DbClient()
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', { maxRetriesPerRequest: null })
 
 const COLD_ID = 'c644a9b8-7df9-411f-95f7-dd9831abf34f'

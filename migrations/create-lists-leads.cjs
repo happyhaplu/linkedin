@@ -1,13 +1,12 @@
 // Create lists and leads tables
-const { createClient } = require('@supabase/supabase-js')
+const { Pool } = require('pg');
 
 const supabaseUrl = 'https://db.rlsyvgjcxxoregwrwuzf.supabase.co'
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsc3l2Z2pjeHhvcmVnd3J3dXpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU3NDA3MzgsImV4cCI6MjA1MTMxNjczOH0.y7LQNEM2kanOM8aRKKOvj2ErhQOx5vu9sN2-Ng_xjvw'
 
 async function migrate() {
-  const supabase = createClient(supabaseUrl, supabaseKey)
-
-  console.log('🚀 Creating lists table...')
+  const supabase = new Pool({ connectionString: process.env.DATABASE_URL || 'postgresql://reach:reach@localhost:5432/reach' })
+console.log('🚀 Creating lists table...')
   
   // Create lists table
   const { error: listsError } = await supabase.rpc('exec_sql', {

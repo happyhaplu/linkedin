@@ -3,7 +3,7 @@
 /* eslint-disable */
 import puppeteer from 'puppeteer-extra'
 import StealthPlugin from 'puppeteer-extra-plugin-stealth'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/db/server'
 
 puppeteer.use(StealthPlugin())
 

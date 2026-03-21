@@ -1,10 +1,6 @@
-const { createClient } = require('@supabase/supabase-js');
+const { Pool } = require('pg');
 
-const supabase = createClient(
-  'https://db.rlsyvgjcxxoregwrwuzf.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsc3l2Z2pjeHhvcmVnd3J3dXpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcyOTczNTgsImV4cCI6MjA1Mjg3MzM1OH0.k5wVvh7kVp3E5Qjg7xLmSv2mSBWKhQ6KExWZuRTwX2Y'
-);
-
+const supabase = new Pool({ connectionString: process.env.DATABASE_URL || 'postgresql://reach:reach@localhost:5432/reach' })
 async function testImport() {
   try {
     // Check if we have any lists

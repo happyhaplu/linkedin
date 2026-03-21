@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { LinkedInAccount, Proxy } from '@/types/linkedin'
 import { loginToLinkedIn, continueLinkedInLogin } from '@/lib/linkedin-automation'
@@ -995,7 +995,7 @@ export async function connectWithProxy(formData: {
         .order('created_at', { ascending: false })
       
       if (userProxies && userProxies.length > 0) {
-        const residential = userProxies.find(p => p.type === 'residential' && p.status !== 'error')
+        const residential = userProxies.find((p: any) => p.type === 'residential' && p.status !== 'error')
         proxyId = residential?.id || userProxies[0].id
         console.log('🌐 Auto-selected proxy:', proxyId)
       }

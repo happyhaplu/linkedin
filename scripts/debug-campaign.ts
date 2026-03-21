@@ -1,10 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
+const sb = new DbClient()
 async function main() {
   const Q3 = '4094732f-e678-487e-8c7e-1d11c9d66565'
   const COLD = 'c644a9b8-7df9-411f-95f7-dd9831abf34f'

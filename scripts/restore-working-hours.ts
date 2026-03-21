@@ -1,13 +1,9 @@
 /**
  * Restore working hours on the campaign after force-test
  */
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
+const sb = new DbClient()
 async function main() {
   const { error } = await sb
     .from('campaigns')

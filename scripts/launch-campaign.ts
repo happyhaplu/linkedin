@@ -1,11 +1,11 @@
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 import { startCampaign } from '../lib/campaign-executor'
 
 async function main() {
   const CAMP = 'c644a9b8-7df9-411f-95f7-dd9831abf34f'
   
   // Set campaign back to active
-  const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+  const sb = new DbClient()
   await sb.from('campaigns').update({ status: 'active' }).eq('id', CAMP)
   
   // Launch with immediate=true

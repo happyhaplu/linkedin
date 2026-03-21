@@ -2,8 +2,11 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Outcraftly Linkedin Automation - Professional Networking Platform',
-  description: 'Outcraftly Linkedin Automation - Secure authentication and professional networking automation powered by Supabase',
+  title: 'GourReach LinkedIn Automation',
+  description: 'GourReach — LinkedIn outreach automation, campaign management, and professional networking platform',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({

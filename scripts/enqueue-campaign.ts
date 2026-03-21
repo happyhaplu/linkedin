@@ -1,11 +1,11 @@
 import dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
 
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 import { startCampaign } from '../lib/campaign-executor'
 
 async function main() {
-  const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+  const sb = new DbClient()
   const CAMP = 'f894669f-d2dd-4194-8480-016135d64cfe'
 
   // Make sure campaign is active

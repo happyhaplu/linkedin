@@ -5,7 +5,7 @@
  * Use these functions to integrate with LinkedIn's messaging API.
  */
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/db/server'
 
 interface LinkedInConversation {
   threadId: string

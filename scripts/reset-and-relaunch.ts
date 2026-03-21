@@ -2,11 +2,11 @@
  * Reset false-positive leads back to step=1 pending, clear the queue,
  * and re-enqueue them so the campaign restarts cleanly.
  */
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 import { Queue } from 'bullmq'
 import { Redis } from 'ioredis'
 
-const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+const sb = new DbClient()
 const CAMP = 'c644a9b8-7df9-411f-95f7-dd9831abf34f'
 
 async function main() {

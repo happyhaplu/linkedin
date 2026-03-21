@@ -1,4 +1,4 @@
-const { createClient } = require('@supabase/supabase-js');
+const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
@@ -11,11 +11,7 @@ envContent.split('\n').forEach(line => {
   }
 });
 
-const supabase = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL,
-  env.SUPABASE_SERVICE_ROLE_KEY
-);
-
+const supabase = new Pool({ connectionString: process.env.DATABASE_URL || 'postgresql://reach:reach@localhost:5432/reach' })
 (async () => {
   console.log('🔧 Checking network_connections schema...\n');
   

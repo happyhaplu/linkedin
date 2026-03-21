@@ -1,10 +1,6 @@
-const { createClient } = require('@supabase/supabase-js');
+const { Pool } = require('pg');
 
-const supabase = createClient(
-  'https://db.rlsyvgjcxxoregwrwuzf.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsc3l2Z2pjeHhvcmVnd3J3dXpmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNzI5NzM1OCwiZXhwIjoyMDUyODczMzU4fQ.ppzSwS0s7uNHUqf2O8r3ZYqJZ6KExWZuRTwX2YVvH2M'
-);
-
+const supabase = new Pool({ connectionString: process.env.DATABASE_URL || 'postgresql://reach:reach@localhost:5432/reach' })
 async function createCustomFieldsTable() {
   try {
     console.log('Creating custom_fields table...');

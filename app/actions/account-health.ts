@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/db/server'
 import { checkAccountHealth } from '@/lib/utils/linkedin-auth'
 
 export async function monitorAccountHealth(accountId?: string) {

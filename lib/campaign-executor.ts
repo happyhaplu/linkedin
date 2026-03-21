@@ -3,23 +3,20 @@
  * Main orchestrator for campaign execution
  */
 
-import { createClient as createSupabaseClient, SupabaseClient } from '@supabase/supabase-js'
+import { DbClient } from '@/lib/db/query-builder'
 import { processTemplate, checkCharacterLimit } from './template-engine'
 import { addCampaignLeadJob, addConnectionRequestJob, addMessageJob, addStatusCheckJob, campaignProcessorQueue } from './queue/campaign-queue'
 import type { Campaign, CampaignLead, Lead, LinkedInAccount } from '@/types/linkedin'
 
-let _supabase: SupabaseClient | null = null
-function getSupabase(): SupabaseClient {
+let _supabase: DbClient | null = null
+function getSupabase(): DbClient {
   if (!_supabase) {
-    _supabase = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    _supabase = new DbClient()
   }
   return _supabase
 }
 /** @deprecated Use getSupabase() — kept for compatibility with existing code */
-const supabase = new Proxy({} as SupabaseClient, {
+const supabase = new Proxy({} as DbClient, {
   get(_target, prop) {
     return (getSupabase() as any)[prop]
   }
@@ -1004,7 +1001,7 @@ export async function checkDailyLimit(
       .gte('date', sevenDaysAgoStr)
 
     const weeklyTotal = (weeklyCounters || []).reduce(
-      (sum, row) => sum + ((row.connections_sent as number) || 0),
+      (sum: any, row: any) => sum + ((row.connections_sent as number) || 0),
       0
     )
 

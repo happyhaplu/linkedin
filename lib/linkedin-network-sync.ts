@@ -2,8 +2,8 @@
 // @ts-nocheck
 /* eslint-disable */
 import { chromium } from 'playwright'
-import { createClient as createServerClient } from '@/lib/supabase/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient as createServerClient } from '@/lib/db/server'
+import { DbClient } from '@/lib/db/query-builder'
 import { revalidatePath } from 'next/cache'
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
@@ -22,10 +22,7 @@ interface NetworkSyncResult {
  */
 async function handleAccountDisconnection(accountId: string, errorMessage: string): Promise<void> {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const supabase = new DbClient()
     
     // Check if error indicates account restriction/logout
     const errorLower = errorMessage.toLowerCase()
@@ -344,10 +341,7 @@ export async function syncLinkedInNetwork(
 ): Promise<NetworkSyncResult> {
   let browser
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const supabase = new DbClient()
 
   try {
     const cookiesObj = parseCookiesInput(cookies)

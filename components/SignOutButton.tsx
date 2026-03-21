@@ -1,8 +1,9 @@
 'use client'
 
-import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
 
 interface SignOutButtonProps {
   fullWidth?: boolean
@@ -10,17 +11,27 @@ interface SignOutButtonProps {
 
 export default function SignOutButton({ fullWidth = false }: SignOutButtonProps) {
   const router = useRouter()
-  const supabase = createClient()
   const [loading, setLoading] = useState(false)
 
   const handleSignOut = async () => {
     setLoading(true)
     try {
-      await supabase.auth.signOut()
-      router.push('/login')
-      router.refresh()
+      const res = await fetch(`${API_URL}/auth/signout`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+      const data = await res.json()
+      // Navigate to Accounts logout page to clear their session too
+      if (data.logout_url) {
+        window.location.href = data.logout_url
+      } else {
+        router.push('/login')
+        router.refresh()
+      }
     } catch (error) {
       console.error('Error signing out:', error)
+      router.push('/login')
+      router.refresh()
     } finally {
       setLoading(false)
     }

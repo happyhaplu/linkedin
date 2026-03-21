@@ -7,12 +7,9 @@ import { Worker, Job } from 'bullmq'
 import { Redis } from 'ioredis'
 import { QUEUE_NAMES, type CampaignLeadJobData } from '../campaign-queue'
 import { processCampaignLeadStep, incrementDailyCounter } from '../../campaign-executor'
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { DbClient } from '@/lib/db/query-builder'
 
-const supabase = createSupabaseClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabase = new DbClient()
 
 const connection = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
   maxRetriesPerRequest: null,

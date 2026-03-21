@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/db/server';
 import { getQueueStats } from '@/lib/queue/campaign-queue';
 
 export async function GET(
@@ -51,12 +51,12 @@ export async function GET(
     // Count by status (only valid campaign_leads statuses)
     const stats = {
       total: leadStats.length,
-      pending: leadStats.filter((l) => l.status === 'pending').length,
-      in_progress: leadStats.filter((l) => l.status === 'in_progress').length,
-      paused: leadStats.filter((l) => l.status === 'paused').length,
-      completed: leadStats.filter((l) => l.status === 'completed').length,
-      failed: leadStats.filter((l) => l.status === 'failed').length,
-      removed: leadStats.filter((l) => l.status === 'removed').length,
+      pending: leadStats.filter((l: any) => l.status === 'pending').length,
+      in_progress: leadStats.filter((l: any) => l.status === 'in_progress').length,
+      paused: leadStats.filter((l: any) => l.status === 'paused').length,
+      completed: leadStats.filter((l: any) => l.status === 'completed').length,
+      failed: leadStats.filter((l: any) => l.status === 'failed').length,
+      removed: leadStats.filter((l: any) => l.status === 'removed').length,
     };
 
     // Get queue stats

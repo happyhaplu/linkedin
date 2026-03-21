@@ -1,7 +1,7 @@
 const { Pool } = require('pg');
 
 const pool = new Pool({
-  connectionString: 'postgresql://postgres:ppzSwS0s7uNHUqf2@db.rlsyvgjcxxoregwrwuzf.supabase.co:5432/postgres'
+  connectionString: 'postgresql://reach:reach@localhost:5432/reach'
 });
 
 async function createCustomFieldsTable() {

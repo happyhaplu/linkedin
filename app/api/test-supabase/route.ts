@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/db/server'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
@@ -6,17 +6,16 @@ export async function GET() {
     const supabase = await createClient()
     
     // Test connection
-    const { data, error } = await supabase.auth.getSession()
+    const { data, error } = await supabase.auth.getUser()
     
     return NextResponse.json({
       status: 'testing',
       envVars: {
-        url: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'present' : 'missing',
-        anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'present (length: ' + process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.length + ')' : 'missing',
+        databaseUrl: process.env.DATABASE_URL ? 'present' : 'missing',
       },
       connectionTest: {
         error: error ? error.message : null,
-        hasSession: !!data.session
+        hasUser: !!data?.user
       }
     })
   } catch (err: any) {

@@ -26,11 +26,11 @@ const mockFrom = jest.fn().mockReturnValue({
   }),
 })
 
-jest.mock('@supabase/supabase-js', () => ({
-  createClient: () => ({ from: mockFrom }),
+jest.mock('@/lib/db/query-builder', () => ({
+  DbClient: jest.fn().mockImplementation(() => ({ from: mockFrom })),
 }))
 
-jest.mock('@/lib/supabase/server', () => ({
+jest.mock('@/lib/db/server', () => ({
   createClient: () =>
     Promise.resolve({
       auth: { getUser: () => Promise.resolve({ data: { user: { id: 'u1' } } }) },

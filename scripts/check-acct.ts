@@ -1,7 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 
 async function main() {
-  const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+  const sb = new DbClient()
   const { data, error } = await sb.from('linkedin_accounts').select('*').limit(10)
   console.log('error:', error?.message)
   if (data?.[0]) {

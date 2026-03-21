@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { NetworkConnection, ConnectionRequest, NetworkSyncLog, LinkedInAccount } from '@/types/linkedin'
 
@@ -662,9 +662,9 @@ export async function getNetworkAnalytics(linkedinAccountId?: string) {
   const { count: totalConnections } = await connectionQuery
   const { data: requests } = await requestQuery
 
-  const pendingSent = requests?.filter(r => r.request_type === 'sent' && r.request_status === 'pending').length || 0
-  const acceptedRequests = requests?.filter(r => r.request_status === 'accepted').length || 0
-  const declinedRequests = requests?.filter(r => r.request_status === 'declined').length || 0
+  const pendingSent = requests?.filter((r: any) => r.request_type === 'sent' && r.request_status === 'pending').length || 0
+  const acceptedRequests = requests?.filter((r: any) => r.request_status === 'accepted').length || 0
+  const declinedRequests = requests?.filter((r: any) => r.request_status === 'declined').length || 0
 
   return {
     totalConnections: totalConnections || 0,

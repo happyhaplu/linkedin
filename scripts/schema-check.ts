@@ -1,5 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
-const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+import { DbClient } from '../lib/db/query-builder'
+const sb = new DbClient()
 async function main() {
   const { data: cl, error: e1 } = await sb.from('campaign_leads').select('*').limit(1)
   if (e1) console.log('campaign_leads error:', e1.message)

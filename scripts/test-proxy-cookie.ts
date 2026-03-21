@@ -4,16 +4,12 @@
  * 
  * Usage: npx tsx scripts/test-proxy-cookie.ts
  */
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 import { buildPlaywrightProxyConfig, buildProxyUrl } from '../lib/utils/proxy-helpers'
 import { sessionCookiesToPlaywright } from '../lib/linkedin-cookie-auth'
 import { chromium } from 'playwright'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://rlsyvgjcxxoregwrwuzf.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
+const supabase = new DbClient()
 async function main() {
   console.log('=== Test: Cookie Auth Through Proxy (Playwright Native) ===\n')
 

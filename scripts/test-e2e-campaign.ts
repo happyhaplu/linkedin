@@ -1,11 +1,11 @@
 import dotenv from 'dotenv'
 dotenv.config({ path: '/home/harekrishna/Projects/Linkedin/.env.local' })
 
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 import { Queue } from 'bullmq'
 import { Redis } from 'ioredis'
 
-const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+const sb = new DbClient()
 const CID = 'f894669f-d2dd-4194-8480-016135d64cfe'
 
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {

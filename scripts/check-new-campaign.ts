@@ -1,7 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 import { Queue } from 'bullmq'
 import { Redis } from 'ioredis'
-const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+const sb = new DbClient()
 
 async function main() {
   const NEW_CAMP = 'f894669f-c1db-4339-8c11-72b8c7289e93'

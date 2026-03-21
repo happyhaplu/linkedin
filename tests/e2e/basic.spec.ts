@@ -4,7 +4,7 @@ test('homepage loads and redirects appropriately', async ({ page }) => {
   await page.goto('/');
 
   // The homepage should load (it might redirect to login or dashboard)
-  await expect(page).toHaveTitle(/Outcraftly/);
+  await expect(page).toHaveTitle(/Reach/);
 });
 
 test('login page loads', async ({ page }) => {

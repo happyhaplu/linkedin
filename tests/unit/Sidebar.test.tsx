@@ -67,7 +67,7 @@ describe('Sidebar', () => {
   it('renders logo and branding', () => {
     render(<Sidebar />)
 
-    expect(screen.getByAltText('Outcraftly Logo')).toBeInTheDocument()
+    expect(screen.getByAltText('Reach Logo')).toBeInTheDocument()
     expect(screen.getByText('Linkedin')).toBeInTheDocument()
     expect(screen.getByText('Automation')).toBeInTheDocument()
   })

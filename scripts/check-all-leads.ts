@@ -1,9 +1,9 @@
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 import { sendConnectionRequest } from '../lib/linkedin-campaign-automation'
 import { sessionCookiesToPlaywright } from '../lib/linkedin-cookie-auth'
 
 async function main() {
-  const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+  const sb = new DbClient()
   const { data: acct } = await sb.from('linkedin_accounts').select('id, email, session_cookies, password_encrypted').eq('id', '67b75216-06b0-49b1-9470-234588fdba45').single()
 
   const { data: leads } = await sb.from('campaign_leads')

@@ -13,15 +13,12 @@
  * Failures are logged but never bubble up to prevent blocking the main flow.
  */
 
-import { createClient as createSupabaseClient, SupabaseClient } from '@supabase/supabase-js'
+import { DbClient } from '@/lib/db/query-builder'
 
-let _supabase: SupabaseClient | null = null
+let _supabase: DbClient | null = null
 function getSupabase() {
   if (!_supabase) {
-    _supabase = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    _supabase = new DbClient()
   }
   return _supabase
 }

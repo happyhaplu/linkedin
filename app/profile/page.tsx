@@ -1,20 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/db/client'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import Sidebar from '@/components/Sidebar'
 import ProfileDropdown from '@/components/ProfileDropdown'
+import { getAccountsBillingUrl } from '@/lib/accounts'
+
+const ACCOUNTS_URL = process.env.NEXT_PUBLIC_ACCOUNTS_URL || 'https://accounts.gour.io'
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [updating, setUpdating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
   const router = useRouter()
   const supabase = createClient()
 
@@ -30,41 +27,6 @@ export default function ProfilePage() {
     }
     getUser()
   }, [router, supabase])
-
-  const handleUpdatePassword = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setSuccess(null)
-    setUpdating(true)
-
-    if (newPassword !== confirmPassword) {
-      setError('Passwords do not match')
-      setUpdating(false)
-      return
-    }
-
-    if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long')
-      setUpdating(false)
-      return
-    }
-
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-      })
-
-      if (error) throw error
-
-      setSuccess('Password updated successfully!')
-      setNewPassword('')
-      setConfirmPassword('')
-    } catch (error: any) {
-      setError(error.message || 'An error occurred while updating password')
-    } finally {
-      setUpdating(false)
-    }
-  }
 
   if (loading) {
     return (
@@ -101,7 +63,7 @@ export default function ProfilePage() {
               <div className="ml-6">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile Settings</h1>
                 <p className="text-gray-600 mt-1">{user?.email}</p>
-                <p className="text-sm text-blue-600 font-medium">Linkedin Automation Account</p>
+                <p className="text-sm text-blue-600 font-medium">Reach Account</p>
               </div>
             </div>
 
@@ -117,85 +79,39 @@ export default function ProfilePage() {
                     <p className="text-sm font-medium text-gray-600 mb-1">User ID</p>
                     <p className="font-mono text-xs text-gray-800 break-all">{user?.id}</p>
                   </div>
-                  <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
-                    <p className="text-sm font-medium text-gray-600 mb-1">Account Created</p>
-                    <p className="text-gray-800">
-                      {new Date(user?.created_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
-                    <p className="text-sm font-medium text-gray-600 mb-1">Email Verified</p>
-                    <p className="text-gray-800">
-                      {user?.email_confirmed_at ? (
-                        <span className="text-green-600 font-medium">✓ Verified</span>
-                      ) : (
-                        <span className="text-amber-600 font-medium">⚠ Not Verified</span>
-                      )}
-                    </p>
-                  </div>
                 </div>
               </div>
             </div>
 
             <div className="border-t border-gray-200 mt-8 pt-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">Change Password</h2>
-              
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">
-                  {error}
-                </div>
-              )}
-
-              {success && (
-                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm mb-4">
-                  {success}
-                </div>
-              )}
-
-              <form onSubmit={handleUpdatePassword} className="space-y-6 max-w-md">
-                <div>
-                  <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                    New Password
-                  </label>
-                  <input
-                    id="newPassword"
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
-                    placeholder="••••••••"
-                  />
-                  <p className="mt-1 text-xs text-gray-500">Minimum 6 characters</p>
-                </div>
-
-                <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                    Confirm New Password
-                  </label>
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
-                    placeholder="••••••••"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={updating}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Account Management</h2>
+              <p className="text-gray-600 mb-6">
+                Password changes, billing, and subscription management are handled through your Accounts dashboard.
+              </p>
+              <div className="flex space-x-4">
+                <a
+                  href={`${ACCOUNTS_URL}/profile`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-md transition-colors text-sm inline-flex items-center space-x-2"
                 >
-                  {updating ? 'Updating...' : 'Update Password'}
-                </button>
-              </form>
+                  <span>Manage Account</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+                <a
+                  href={getAccountsBillingUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-6 rounded-md transition-colors text-sm inline-flex items-center space-x-2"
+                >
+                  <span>Billing & Subscription</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              </div>
             </div>
           </div>
         </main>

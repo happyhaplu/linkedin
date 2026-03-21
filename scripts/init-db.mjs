@@ -1,10 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = 'https://rlsyvgjcxxoregwrwuzf.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsc3l2Z2pjeHhvcmVnd3J3dXpmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTcwNjU3NCwiZXhwIjoyMDg1MjgyNTc0fQ.0O0T_lTunWIVXVY1y8d5_51-hzb8s40TFmvYsu51QqQ'
-
-const supabase = createClient(supabaseUrl, supabaseKey)
-
+import pg from 'pg'
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL || 'postgresql://reach:reach@localhost:5432/reach' })
 async function createTables() {
   console.log('🚀 Creating database tables...\n')
 

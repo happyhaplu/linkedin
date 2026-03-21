@@ -1,19 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
+import pg from 'pg'
 import fs from 'fs'
 
-const supabaseUrl = 'https://rlsyvgjcxxoregwrwuzf.supabase.co'
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsc3l2Z2pjeHhvcmVnd3J3dXpmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTcwNjU3NCwiZXhwIjoyMDg1MjgyNTc0fQ.0O0T_lTunWIVXVY1y8d5_51-hzb8s40TFmvYsu51QqQ'
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  },
-  db: {
-    schema: 'public'
-  }
-})
-
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL || 'postgresql://reach:reach@localhost:5432/reach' })
 async function createTables() {
   console.log('🚀 Creating tables using Supabase Admin API...\n')
 

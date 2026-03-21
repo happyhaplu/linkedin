@@ -1,13 +1,10 @@
 'use server'
 
-import { createClient as createServerClient } from '@/lib/supabase/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient as createServerClient } from '@/lib/db/server'
+import { DbClient } from '@/lib/db/query-builder'
 
 function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  return new DbClient()
 }
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -112,14 +109,14 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
     .order('created_at', { ascending: false })
 
   const all = campaigns || []
-  const campaignIds = all.map(c => c.id)
+  const campaignIds = all.map((c: any) => c.id)
 
-  const activeCampaigns = all.filter(c => ['active', 'running'].includes(c.status)).length
-  const connectionsSent = all.reduce((s, c) => s + (c.connection_sent || 0), 0)
-  const connectionsAccepted = all.reduce((s, c) => s + (c.connection_accepted || 0), 0)
-  const messagesSent = all.reduce((s, c) => s + (c.messages_sent || 0), 0)
-  const repliesReceived = all.reduce((s, c) => s + (c.replies_received || 0), 0)
-  const totalLeads = all.reduce((s, c) => s + (c.total_leads || 0), 0)
+  const activeCampaigns = all.filter((c: any) => ['active', 'running'].includes(c.status)).length
+  const connectionsSent = all.reduce((s: any, c: any) => s + (c.connection_sent || 0), 0)
+  const connectionsAccepted = all.reduce((s: any, c: any) => s + (c.connection_accepted || 0), 0)
+  const messagesSent = all.reduce((s: any, c: any) => s + (c.messages_sent || 0), 0)
+  const repliesReceived = all.reduce((s: any, c: any) => s + (c.replies_received || 0), 0)
+  const totalLeads = all.reduce((s: any, c: any) => s + (c.total_leads || 0), 0)
 
   const acceptanceRate = connectionsSent > 0 ? connectionsAccepted / connectionsSent : 0
   const replyRate = messagesSent > 0 ? repliesReceived / messagesSent : 0
@@ -224,7 +221,7 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
   }
 
   // ── 6. Campaign performance table ─────────────────────────────────────────
-  const campaignRows: CampaignRow[] = all.map(c => ({
+  const campaignRows: CampaignRow[] = all.map((c: any) => ({
     id: c.id,
     name: c.name,
     status: c.status,
@@ -237,7 +234,7 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
     replyRate: (c.messages_sent || 0) > 0
       ? (c.replies_received || 0) / c.messages_sent
       : 0,
-  })).sort((a, b) => b.acceptanceRate - a.acceptanceRate)
+  })).sort((a: any, b: any) => b.acceptanceRate - a.acceptanceRate)
 
   // ── 7. Recent activity feed ───────────────────────────────────────────────
   let recentActivity: ActivityEvent[] = []
@@ -252,7 +249,7 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
 
     if (logs && logs.length > 0) {
       // Batch-resolve lead names
-      const clIds = Array.from(new Set(logs.map(l => l.campaign_lead_id).filter(Boolean)))
+      const clIds = Array.from(new Set(logs.map((l: any) => l.campaign_lead_id).filter(Boolean)))
       const nameMap: Record<string, string> = {}
 
       if (clIds.length > 0) {
@@ -262,20 +259,20 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
           .in('id', clIds)
 
         if (cls && cls.length > 0) {
-          const leadIds = cls.map(c => c.lead_id)
+          const leadIds = cls.map((c: any) => c.lead_id)
           const { data: leads } = await supabase
             .from('leads')
             .select('id, full_name')
             .in('id', leadIds)
 
-          const lm = new Map((leads || []).map(l => [l.id, l.full_name]))
-          for (const cl of cls) nameMap[cl.id] = lm.get(cl.lead_id) || 'Someone'
+          const lm = new Map<string, string>((leads || []).map((l: any) => [l.id, l.full_name]))
+          for (const cl of (cls as any[])) nameMap[cl.id] = lm.get(cl.lead_id) || 'Someone'
         }
       }
 
-      const cMap = new Map(all.map(c => [c.id, c.name]))
+      const cMap = new Map(all.map((c: any) => [c.id, c.name]))
 
-      recentActivity = logs.map(l => ({
+      recentActivity = logs.map((l: any) => ({
         id: l.id,
         type: l.activity_type,
         status: l.activity_status,

@@ -1,5 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
-const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+import { DbClient } from '../lib/db/query-builder'
+const sb = new DbClient()
 
 async function main() {
   const { data: camps } = await sb.from('campaigns').select('id, name, status, created_at').order('created_at', { ascending: false }).limit(5)

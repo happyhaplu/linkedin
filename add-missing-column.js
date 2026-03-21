@@ -1,27 +1,10 @@
-const { createClient } = require('@supabase/supabase-js')
-const fs = require('fs')
-const path = require('path')
-
-// Load from .env.local
-const envPath = path.join(__dirname, '.env.local')
-const envContent = fs.readFileSync(envPath, 'utf8')
-const env = {}
-envContent.split('\n').forEach(line => {
-  const match = line.match(/^([^=]+)=(.*)$/)
-  if (match) {
-    env[match[1].trim()] = match[2].trim()
-  }
-})
-
-const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY
+const { Pool } = require('pg');
 
 console.log('🔧 Fixing network_connections schema...')
-console.log('📍 URL:', supabaseUrl)
+console.log('📍 Using local PostgreSQL: reach@localhost:5432/reach')
 console.log('')
 
-const supabase = createClient(supabaseUrl, supabaseKey)
-
+const pool = new Pool({ connectionString: process.env.DATABASE_URL || 'postgresql://reach:reach@localhost:5432/reach' })
 async function runMigration() {
   try {
     console.log('📋 Adding missing column via Supabase API...')

@@ -2,13 +2,9 @@
  * Setup proxy and assign to LinkedIn account
  * Usage: npx tsx scripts/setup-proxy.ts
  */
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://rlsyvgjcxxoregwrwuzf.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
+const supabase = new DbClient()
 async function main() {
   // 1. Get the LinkedIn account
   const { data: accounts, error: accErr } = await supabase

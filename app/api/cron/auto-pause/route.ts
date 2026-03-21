@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { DbClient } from '@/lib/db/query-builder'
 import { checkAcceptanceRateCircuitBreaker } from '@/lib/campaign-executor'
 
 /**
@@ -20,10 +20,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const supabase = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const supabase = new DbClient()
 
   try {
     // Fetch all active campaigns

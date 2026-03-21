@@ -4,7 +4,7 @@
  *
  * Usage:  node_modules/.bin/tsx --env-file=.env.local scripts/reenqueue-now.ts
  */
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 import { Queue } from 'bullmq'
 import { Redis } from 'ioredis'
 import { startCampaign } from '../lib/campaign-executor'
@@ -12,11 +12,8 @@ import { startCampaign } from '../lib/campaign-executor'
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', { maxRetriesPerRequest: null })
 
 async function main() {
-  const sb = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-  const q = new Queue('campaign-processor', { connection: redis })
+  const sb = new DbClient()
+const q = new Queue('campaign-processor', { connection: redis })
 
   // Find active/paused campaigns with pending leads
   const { data: campaigns } = await sb

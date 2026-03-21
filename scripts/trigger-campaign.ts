@@ -5,16 +5,12 @@
  * Usage: node_modules/.bin/tsx --env-file=.env.local scripts/trigger-campaign.ts
  */
 
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 import { Queue } from 'bullmq'
 import { Redis } from 'ioredis'
 import { startCampaign } from '../lib/campaign-executor'
 
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
+const sb = new DbClient()
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
   maxRetriesPerRequest: null,
 })

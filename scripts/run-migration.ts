@@ -1,9 +1,9 @@
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 import dotenv from 'dotenv'
 import { readFileSync } from 'fs'
 dotenv.config({ path: '/home/harekrishna/Projects/Linkedin/.env.local' })
 
-const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+const sb = new DbClient()
 
 async function main() {
   const sql = readFileSync('/home/harekrishna/Projects/Linkedin/migrations/atomic-counter-rpcs.sql', 'utf-8')

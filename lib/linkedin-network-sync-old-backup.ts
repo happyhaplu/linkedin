@@ -2,7 +2,7 @@
 // @ts-nocheck
 /* eslint-disable */
 import { chromium } from 'playwright'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/db/server'
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 

@@ -8,14 +8,12 @@
  */
 
 import { Worker, Job } from 'bullmq';
-import { createClient } from '@supabase/supabase-js';
+import { DbClient } from '@/lib/db/query-builder';
 import { checkConnectionStatus } from '@/lib/linkedin-campaign-automation';
 import { redisConnection, STATUS_CHECKER, addCampaignLeadJob } from '../campaign-queue';
 import { calculateDelay } from '@/lib/campaign-executor';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = new DbClient();
 
 interface StatusCheckJob {
   campaign_lead_id: string;

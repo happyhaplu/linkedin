@@ -11,13 +11,10 @@ import { Worker, Job } from 'bullmq'
 import { Redis } from 'ioredis'
 import { MESSAGE_SYNC_QUEUE, type MessageSyncJobData } from '@/lib/queue/message-sync-queue'
 import { syncAllAccounts, syncAccountMessages, sendLinkedInReply } from '@/lib/linkedin-message-scraper'
-import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { DbClient } from '@/lib/db/query-builder'
 
 function getServiceSupabase() {
-  return createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  return new DbClient()
 }
 
 function makeRedis() {

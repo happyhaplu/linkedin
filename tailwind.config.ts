@@ -22,7 +22,7 @@ const config: Config = {
           900: '#1e3a8a',
           950: '#172554',
         },
-        outcraftly: {
+        reach: {
           blue: '#1a73e8',
           darkBlue: '#0d47a1',
           lightBlue: '#4fc3f7',

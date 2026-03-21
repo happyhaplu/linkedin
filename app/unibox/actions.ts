@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
+import { createClient, createServiceRoleClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { queueReply } from '@/lib/queue/message-sync-queue'
 

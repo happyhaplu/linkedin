@@ -9,16 +9,13 @@
  */
 
 import { chromium, Browser, Page, BrowserContext } from 'playwright';
-import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { DbClient } from '@/lib/db/query-builder';
 
 import { sessionCookiesToPlaywright } from './linkedin-cookie-auth'
 
 // Service-role client — safe to use in workers (no cookies() dependency)
 function getServiceSupabase() {
-  return createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  return new DbClient()
 }
 
 interface LinkedInAccount {

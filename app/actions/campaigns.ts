@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
+import { createClient, createServiceRoleClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type {
   Campaign,
@@ -84,7 +84,7 @@ export async function getCampaigns(filters?: CampaignFilters) {
 
   // Fetch senders separately if we have campaigns
   if (data && data.length > 0) {
-    const campaignIds = data.map(c => c.id)
+    const campaignIds = data.map((c: any) => c.id)
     const { data: sendersData } = await supabase
       .from('campaign_senders')
       .select(`
@@ -97,9 +97,9 @@ export async function getCampaigns(filters?: CampaignFilters) {
       .in('campaign_id', campaignIds)
 
     // Attach senders to campaigns
-    const campaignsWithSenders = data.map(campaign => ({
+    const campaignsWithSenders = data.map((campaign: any) => ({
       ...campaign,
-      senders: sendersData?.filter(s => s.campaign_id === campaign.id) || []
+      senders: sendersData?.filter((s: any) => s.campaign_id === campaign.id) || []
     }))
 
     return campaignsWithSenders as (Campaign & { lead_list?: any, senders?: any[] })[]
@@ -206,7 +206,7 @@ export async function createCampaign(input: CreateCampaignInput) {
 
   // Add campaign senders
   if (input.sender_ids && input.sender_ids.length > 0) {
-    const sendersData = input.sender_ids.map(senderId => ({
+    const sendersData = input.sender_ids.map((senderId: any) => ({
       campaign_id: campaign.id,
       linkedin_account_id: senderId,
       is_active: true,
@@ -227,7 +227,7 @@ export async function createCampaign(input: CreateCampaignInput) {
 
   // Add campaign sequences
   if (input.sequences && input.sequences.length > 0) {
-    const sequencesData = input.sequences.map(seq => ({
+    const sequencesData = input.sequences.map((seq: any) => ({
       campaign_id: campaign.id,
       step_number: seq.step_number,
       step_type: seq.step_type,
@@ -270,7 +270,7 @@ export async function createCampaign(input: CreateCampaignInput) {
         .eq('campaign_id', campaign.id)
         .eq('is_active', true)
 
-      const leadsToInsert = listLeads.map((ll, idx) => ({
+      const leadsToInsert = listLeads.map((ll: any, idx: number) => ({
         campaign_id: campaign.id,
         lead_id: ll.id,
         sender_id: campaignSenders && campaignSenders.length > 0
@@ -390,7 +390,7 @@ export async function startCampaign(campaignId: string, launchImmediately = fals
       throw new Error('No active LinkedIn accounts. Please connect a LinkedIn account first.')
     }
 
-    const sendersToInsert = activeAccounts.map(acct => ({
+    const sendersToInsert = activeAccounts.map((acct: any) => ({
       campaign_id: campaignId,
       linkedin_account_id: acct.id,
       is_active: true,
@@ -405,7 +405,7 @@ export async function startCampaign(campaignId: string, launchImmediately = fals
       console.error('[startCampaign] Failed to auto-assign senders:', senderInsertErr)
       throw new Error('Failed to assign LinkedIn accounts to campaign')
     }
-    console.log(`[startCampaign] Auto-assigned ${activeAccounts.length} sender(s): ${activeAccounts.map(a => a.email).join(', ')}`)
+    console.log(`[startCampaign] Auto-assigned ${activeAccounts.length} sender(s): ${activeAccounts.map((a: any) => a.email).join(', ')}`)
   }
 
   // Enqueue jobs for all pending leads via the campaign executor.
@@ -659,7 +659,7 @@ export async function addLeadsToCampaign(campaignId: string, leadIds: string[]) 
     .eq('campaign_id', campaignId)
     .eq('is_active', true)
 
-  const campaignLeadsData = leadIds.map((leadId, index) => ({
+  const campaignLeadsData = leadIds.map((leadId: any, index: number) => ({
     campaign_id: campaignId,
     lead_id: leadId,
     sender_id: senders && senders.length > 0 ? senders[index % senders.length].id : null,
@@ -723,7 +723,7 @@ export async function addLeadsFromList(campaignId: string, listId: string) {
     .eq('campaign_id', campaignId)
 
   const existingIds = new Set((existing || []).map((l: any) => l.lead_id))
-  const newLeads = listLeads.filter(l => !existingIds.has(l.id))
+  const newLeads = listLeads.filter((l: any) => !existingIds.has(l.id))
 
   if (newLeads.length === 0) return { added: 0 }
 
@@ -734,7 +734,7 @@ export async function addLeadsFromList(campaignId: string, listId: string) {
     .eq('campaign_id', campaignId)
     .eq('is_active', true)
 
-  const leadsData = newLeads.map((ll, idx) => ({
+  const leadsData = newLeads.map((ll: any, idx: number) => ({
     campaign_id: campaignId,
     lead_id: ll.id,
     sender_id: senders && senders.length > 0 ? senders[idx % senders.length].id : null,
@@ -756,7 +756,7 @@ export async function exportCampaignLeads(campaignId: string) {
   
   // Convert to CSV format
   const headers = ['Name', 'Company', 'Position', 'Status', 'Connection Sent', 'Connection Accepted', 'Messages Sent', 'Replies Received', 'First Reply']
-  const rows = leads.map(cl => [
+  const rows = leads.map((cl: any) => [
     cl.lead?.full_name || `${cl.lead?.first_name || ''} ${cl.lead?.last_name || ''}`.trim(),
     cl.lead?.company || '',
     cl.lead?.position || '',
@@ -768,7 +768,7 @@ export async function exportCampaignLeads(campaignId: string) {
     cl.replied_at || ''
   ])
 
-  const csv = [headers, ...rows].map(row => row.join(',')).join('\n')
+  const csv = [headers, ...rows].map((row: any) => row.join(',')).join('\n')
   return csv
 }
 
@@ -812,7 +812,7 @@ export async function getCampaignStats() {
   let connectionAccepted = 0
 
   if (campaigns) {
-    campaigns.forEach(c => {
+    campaigns.forEach((c: any) => {
       totalLeads += c.total_leads || 0
       repliedLeads += c.replied_leads || 0
       connectionSent += c.connection_sent || 0
@@ -988,10 +988,10 @@ export async function getCampaignAnalytics(campaignId: string): Promise<Campaign
 
   const allLeads = leads || []
   const total = allLeads.length
-  const sent = allLeads.filter(l => l.connection_sent_at).length
-  const accepted = allLeads.filter(l => l.connection_accepted_at).length
-  const messaged = allLeads.filter(l => l.first_message_sent_at).length
-  const replied = allLeads.filter(l => l.first_reply_at).length
+  const sent = allLeads.filter((l: any) => l.connection_sent_at).length
+  const accepted = allLeads.filter((l: any) => l.connection_accepted_at).length
+  const messaged = allLeads.filter((l: any) => l.first_message_sent_at).length
+  const replied = allLeads.filter((l: any) => l.first_reply_at).length
 
   const funnel = {
     total_leads: total,
@@ -1033,16 +1033,16 @@ export async function getCampaignAnalytics(campaignId: string): Promise<Campaign
         .in('linkedin_account_id', linkedInAccountIds)
         .eq('date', today)
 
-      connectionsToday = (counters || []).reduce((s, c) => s + (c.connections_sent || 0), 0)
-      messagesToday = (counters || []).reduce((s, c) => s + (c.messages_sent || 0), 0)
+      connectionsToday = (counters || []).reduce((s: any, c: any) => s + (c.connections_sent || 0), 0)
+      messagesToday = (counters || []).reduce((s: any, c: any) => s + (c.messages_sent || 0), 0)
     }
   }
 
   // Today's accepted connections — filter by date on connection_accepted_at
-  acceptedToday = allLeads.filter(l => (l.connection_accepted_at as string | null)?.startsWith(today)).length
+  acceptedToday = allLeads.filter((l: any) => (l.connection_accepted_at as string | null)?.startsWith(today)).length
 
   // Today's replies — filter by first_reply_at date (not all-time total)
-  const repliesToday = allLeads.filter(l => (l.first_reply_at as string | null)?.startsWith(today)).length
+  const repliesToday = allLeads.filter((l: any) => (l.first_reply_at as string | null)?.startsWith(today)).length
 
   const { data: campaign } = await supabase
     .from('campaigns')
@@ -1064,8 +1064,8 @@ export async function getCampaignAnalytics(campaignId: string): Promise<Campaign
     const d = new Date()
     d.setDate(d.getDate() - i)
     const dateStr = d.toISOString().split('T')[0]
-    const dayLeads = allLeads.filter(l => l.connection_sent_at?.startsWith(dateStr))
-    const dayReplies = allLeads.filter(l => l.first_reply_at?.startsWith(dateStr))
+    const dayLeads = allLeads.filter((l: any) => l.connection_sent_at?.startsWith(dateStr))
+    const dayReplies = allLeads.filter((l: any) => l.first_reply_at?.startsWith(dateStr))
     trend.push({
       date: dateStr,
       connections: dayLeads.length,
@@ -1080,13 +1080,13 @@ export async function getCampaignAnalytics(campaignId: string): Promise<Campaign
     .eq('campaign_id', campaignId)
     .order('step_number')
 
-  const per_step = (sequences || []).map(seq => {
-    const stepLeads = allLeads.filter(l => {
+  const per_step = (sequences || []).map((seq: any) => {
+    const stepLeads = allLeads.filter((l: any) => {
       if (seq.step_type === 'connection_request') return l.connection_sent_at
       if (seq.step_type === 'message') return l.first_message_sent_at
       return false
     })
-    const converted = allLeads.filter(l => {
+    const converted = allLeads.filter((l: any) => {
       if (seq.step_type === 'connection_request') return l.connection_accepted_at
       if (seq.step_type === 'message') return l.first_reply_at
       return false
@@ -1102,12 +1102,12 @@ export async function getCampaignAnalytics(campaignId: string): Promise<Campaign
 
   // A/B results
   const ab_results = (sequences || [])
-    .filter(seq => seq.ab_test_enabled)
-    .map(seq => {
-      const aLeads = (allLeads as any[]).filter(l => l.variant === 'A')
-      const bLeads = (allLeads as any[]).filter(l => l.variant === 'B')
-      const aReplied = aLeads.filter(l => l.first_reply_at).length
-      const bReplied = bLeads.filter(l => l.first_reply_at).length
+    .filter((seq: any) => seq.ab_test_enabled)
+    .map((seq: any) => {
+      const aLeads = (allLeads as any[]).filter((l: any) => l.variant === 'A')
+      const bLeads = (allLeads as any[]).filter((l: any) => l.variant === 'B')
+      const aReplied = aLeads.filter((l: any) => l.first_reply_at).length
+      const bReplied = bLeads.filter((l: any) => l.first_reply_at).length
       return {
         step_id: seq.id,
         variant_a_sent: aLeads.length,
@@ -1217,7 +1217,7 @@ export async function duplicateCampaign(campaignId: string) {
 
   if (senders && senders.length > 0) {
     await supabase.from('campaign_senders').insert(
-      senders.map(s => ({ ...s, campaign_id: copy.id }))
+      senders.map((s: any) => ({ ...s, campaign_id: copy.id }))
     )
   }
 
@@ -1231,7 +1231,7 @@ export async function duplicateCampaign(campaignId: string) {
   if (sequences && sequences.length > 0) {
     const { id: _sid, created_at: _sca, updated_at: _sua, ...seqRest } = sequences[0]
     await supabase.from('campaign_sequences').insert(
-      sequences.map(({ id: _sid2, created_at: _sca2, updated_at: _sua2, ...s }) => ({
+      sequences.map(({  id: _sid2, created_at: _sca2, updated_at: _sua2, ...s  }: any) => ({
         ...s,
         campaign_id: copy.id,
         parent_step_id: null

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/db/client'
 
 export default function DebugImportPage() {
   const [logs, setLogs] = useState<string[]>([])
@@ -100,7 +100,7 @@ export default function DebugImportPage() {
       } else {
         addLog(`📋 Found ${lists?.length || 0} lists`)
         if (lists && lists.length > 0) {
-          lists.forEach(list => {
+          lists.forEach((list: any) => {
             addLog(`  - ${list.name} (${list.lead_count} leads)`)
           })
         } else {

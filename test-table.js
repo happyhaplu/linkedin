@@ -1,4 +1,4 @@
-const { createClient } = require('@supabase/supabase-js');
+const { Pool } = require('pg');
 const fs = require('fs');
 
 const envContent = fs.readFileSync('.env.local', 'utf8');
@@ -10,11 +10,7 @@ envContent.split('\n').forEach(line => {
   }
 });
 
-const supabase = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL,
-  env.SUPABASE_SERVICE_ROLE_KEY
-);
-
+const supabase = new Pool({ connectionString: process.env.DATABASE_URL || 'postgresql://reach:reach@localhost:5432/reach' })
 (async () => {
   console.log('Attempting to insert a test row to see what columns exist...\n');
   

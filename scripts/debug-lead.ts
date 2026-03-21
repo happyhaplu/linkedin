@@ -1,8 +1,8 @@
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 import { sessionCookiesToPlaywright } from '../lib/linkedin-cookie-auth'
 import { chromium } from 'playwright'
 
-const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+const sb = new DbClient()
 
 async function checkProfile(profileUrl: string, cookies: any[]) {
   const browser = await chromium.launch({ headless: true })

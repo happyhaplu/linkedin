@@ -9,13 +9,11 @@
  */
 
 import { Worker, Job } from 'bullmq';
-import { createClient } from '@supabase/supabase-js';
+import { DbClient } from '@/lib/db/query-builder';
 import { scanInboxForReplies } from '@/lib/linkedin-campaign-automation';
 import { redisConnection, INBOX_SCANNER } from '../campaign-queue';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = new DbClient();
 
 interface InboxScanJob {
   campaign_id: string;

@@ -9,7 +9,7 @@ import { Worker, Job, DelayedError } from 'bullmq'
 import { Redis } from 'ioredis'
 import { processCampaignLeadStep } from '@/lib/campaign-executor'
 import { QUEUE_NAMES, type CampaignLeadJobData } from '@/lib/queue/campaign-queue'
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '@/lib/db/query-builder'
 
 // ─── Singleton guard ─────────────────────────────────────────────────────────
 let started = false
@@ -28,10 +28,7 @@ function makeRedis() {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function supabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  return new DbClient()
 }
 
 function randomSleep(min: number, max: number) {

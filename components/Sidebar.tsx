@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import SignOutButton from './SignOutButton'
 
@@ -64,21 +63,17 @@ export default function Sidebar() {
 
   return (
     <div className="flex flex-col h-full bg-white border-r border-gray-200">
-      {/* Logo Section */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
-          <Image
-            src="https://raw.githubusercontent.com/happyhaplu/Outcraftly-assets/main/1764808676915.jpg"
-            alt="Outcraftly Logo"
-            width={40}
-            height={40}
-            className="rounded-lg object-contain"
+      {/* Logo Section — Zoho-style: [icon] Product Name */}
+      <div className="px-4 py-3.5 border-b border-gray-200">
+        <Link href="/dashboard" className="flex items-center gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/icon.svg"
+            alt=""
+            className="h-7 w-7 flex-shrink-0"
           />
-          <div>
-            <h1 className="text-sm font-semibold text-gray-900">Linkedin</h1>
-            <p className="text-xs text-gray-500">Automation</p>
-          </div>
-        </div>
+          <span className="text-[20px] font-semibold text-gray-900 leading-none">Reach</span>
+        </Link>
       </div>
 
       {/* Menu Items */}

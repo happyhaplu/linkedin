@@ -1,11 +1,7 @@
-const { createClient } = require('@supabase/supabase-js')
+const { Pool } = require('pg');
 require('dotenv').config({ path: '.env.local' })
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
-
+const supabase = new Pool({ connectionString: process.env.DATABASE_URL || 'postgresql://reach:reach@localhost:5432/reach' })
 async function addColumn() {
   try {
     const { data, error } = await supabase.rpc('exec_sql', {

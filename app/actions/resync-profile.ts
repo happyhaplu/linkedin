@@ -1,7 +1,7 @@
 // Server action to re-sync profile data for existing accounts
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 /**

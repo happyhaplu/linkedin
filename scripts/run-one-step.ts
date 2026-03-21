@@ -1,10 +1,10 @@
 /**
  * Run a single campaign lead step directly (no queue) for debugging
  */
-import { createClient } from '@supabase/supabase-js'
+import { DbClient } from '../lib/db/query-builder'
 import { processCampaignLeadStep } from '../lib/campaign-executor'
 
-const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+const sb = new DbClient()
 const COLD_ID = 'c644a9b8-7df9-411f-95f7-dd9831abf34f'
 const ACCOUNT_ID = '67b75216-06b0-49b1-9470-234588fdba45'
 
