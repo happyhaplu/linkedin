@@ -1,0 +1,41 @@
+# ── Build Context Ignores ────────────────────────────────────────────────────
+.git
+.gitignore
+*.md
+
+# Go build artifacts
+backend/bin/
+backend/server
+backend/*.exe
+
+# Frontend dev artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/.vscode/
+
+# Environment files (secrets — injected at runtime)
+.env
+.env.*
+backend/.env
+backend/.env.*
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+*.pem
+
+# Legacy files at root (old Next.js era)
+*.js
+*.ts
+*.sh
+*.sql
+*.csv
+scripts/
+migrations/
+lib/
+app/
+components/
+hooks/
+types/
+public/

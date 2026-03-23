@@ -6,10 +6,12 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/reach/backend/internal/models"
 )
 
-// Connect opens a GORM connection pool.
-// It does NOT auto-migrate — the existing schema from the Next.js era is kept.
+// Connect opens a GORM connection pool and auto-migrates all model schemas.
+// AutoMigrate only adds missing columns/indexes — it never drops existing data.
 func Connect(dsn string) *gorm.DB {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Warn),
@@ -26,5 +28,33 @@ func Connect(dsn string) *gorm.DB {
 	sqlDB.SetMaxIdleConns(5)
 
 	log.Println("[DB] Connected to PostgreSQL")
+
+	// Auto-migrate all models — adds any missing columns/indexes safely
+	if err := db.AutoMigrate(
+		&models.Lead{},
+		&models.LeadList{},
+		&models.CustomField{},
+		&models.LinkedInAccount{},
+		&models.Proxy{},
+		&models.Campaign{},
+		&models.CampaignSequence{},
+		&models.CampaignLead{},
+		&models.CampaignSender{},
+		&models.CampaignActivityLog{},
+		&models.AccountDailyCounter{},
+		&models.CampaignWebhook{},
+		&models.CampaignWebhookLog{},
+		&models.AccountHealthLog{},
+		&models.NetworkConnection{},
+		&models.ConnectionRequest{},
+		&models.NetworkSyncLog{},
+		&models.Conversation{},
+		&models.Message{},
+	); err != nil {
+		log.Printf("[DB] AutoMigrate warning: %v", err)
+	} else {
+		log.Println("[DB] AutoMigrate complete — all tables up to date")
+	}
+
 	return db
 }

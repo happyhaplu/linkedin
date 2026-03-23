@@ -1,7 +1,19 @@
-.PHONY: dev build run tidy clean
+.PHONY: dev build run tidy clean frontend backend
 
-# Development — build and run with live .env
-dev: build run
+# Development — run both Go backend + Vue frontend simultaneously
+dev:
+	@echo "🚀 Starting Reach (backend + frontend)…"
+	@make backend & make frontend & wait
+
+# Run Go backend only
+backend: build
+	@echo "🟢 Backend → http://localhost:4000"
+	cd backend && ./bin/reach-server
+
+# Run Vue frontend only
+frontend:
+	@echo "🟢 Frontend → http://localhost:3000"
+	cd frontend && npm run dev
 
 # Build the Go binary
 build:

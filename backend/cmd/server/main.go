@@ -8,9 +8,12 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
+	"github.com/reach/backend/internal/automation"
 	"github.com/reach/backend/internal/config"
 	"github.com/reach/backend/internal/database"
+	"github.com/reach/backend/internal/repository"
 	"github.com/reach/backend/internal/router"
+	"github.com/reach/backend/internal/workers"
 )
 
 func main() {
@@ -31,7 +34,18 @@ func main() {
 
 	// ── Database ────────────────────────────────────────────────────────────
 	db := database.Connect(cfg.DatabaseURL)
-	_ = db // Will be injected into handlers when we migrate data routes
+
+	// ── Browser Automation (Playwright) ─────────────────────────────────────
+	accountRepo := repository.NewLinkedInAccountRepository(db)
+	browserMgr, err := automation.NewBrowserManager(accountRepo)
+	if err != nil {
+		log.Printf("[WARN] Browser automation unavailable: %v", err)
+		log.Println("[WARN] LinkedIn automation features will be disabled")
+	}
+
+	// ── Background Workers (Queue System) ───────────────────────────────────
+	workerMgr := workers.NewWorkerManager(db, browserMgr)
+	workerMgr.Start()
 
 	// ── Fiber app ───────────────────────────────────────────────────────────
 	app := fiber.New(fiber.Config{
@@ -48,7 +62,7 @@ func main() {
 		},
 	})
 
-	router.Setup(app, cfg)
+	router.Setup(app, cfg, db, workerMgr, browserMgr)
 
 	// ── Graceful shutdown ───────────────────────────────────────────────────
 	quit := make(chan os.Signal, 1)
@@ -57,6 +71,10 @@ func main() {
 	go func() {
 		<-quit
 		log.Println("[Server] Shutting down…")
+		workerMgr.Stop()
+		if browserMgr != nil {
+			browserMgr.Close()
+		}
 		_ = app.Shutdown()
 	}()
 
