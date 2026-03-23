@@ -1,7 +1,6 @@
 # ── Build Context Ignores ────────────────────────────────────────────────────
 .git
 .gitignore
-*.md
 
 # Go build artifacts
 backend/bin/
@@ -16,6 +15,7 @@ frontend/.vscode/
 # Environment files (secrets — injected at runtime)
 .env
 .env.*
+!.env.example
 backend/.env
 backend/.env.*
 
@@ -25,17 +25,19 @@ backend/.env.*
 .DS_Store
 *.pem
 
-# Legacy files at root (old Next.js era)
-*.js
-*.ts
-*.sh
-*.sql
-*.csv
-scripts/
-migrations/
-lib/
-app/
-components/
-hooks/
-types/
-public/
+# ── Root-level legacy files only (slash prefix = root only) ─────────────────
+/*.md
+/*.js
+/*.ts
+/*.sh
+/*.sql
+/*.csv
+/scripts/
+/migrations/
+/lib/
+/app/
+/components/
+/hooks/
+/types/
+/public/
+/tests/

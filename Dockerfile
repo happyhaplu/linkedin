@@ -33,7 +33,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 # ── Stage 3: Runtime ────────────────────────────────────────────────────────
 FROM alpine:3.20
 
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk add --no-cache ca-certificates tzdata wget
 
 # Create non-root user
 RUN addgroup -S reach && adduser -S reach -G reach
@@ -55,7 +55,7 @@ USER reach
 
 EXPOSE 4000
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
     CMD wget -qO- http://localhost:4000/health || exit 1
 
 ENTRYPOINT ["./reach-server"]

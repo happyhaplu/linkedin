@@ -1,8 +1,12 @@
 # ============================================================================
 # Reach — Docker Compose for Coolify
 # ============================================================================
-# Coolify auto-detects docker-compose.yml and deploys all services.
-# Set the environment variables in Coolify's UI or .env file.
+# Coolify auto-detects this file and deploys all services.
+#
+# Coolify magic variables (auto-generated, no manual setup needed):
+#   SERVICE_FQDN_APP_4000  → your domain (e.g. https://reach.gour.io)
+#   SERVICE_PASSWORD_POSTGRES → random DB password
+#   SERVICE_PASSWORD_JWT      → random JWT secret
 # ============================================================================
 
 services:
@@ -13,11 +17,11 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-reach}
-      POSTGRES_USER: ${POSTGRES_USER:-reach}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_DB: reach
+      POSTGRES_USER: reach
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRES:-reach}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-reach} -d ${POSTGRES_DB:-reach}"]
+      test: ["CMD-SHELL", "pg_isready -U reach -d reach"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -30,18 +34,18 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "${PORT:-4000}:4000"
+      - "4000:4000"
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       PORT: "4000"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-reach}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-reach}?sslmode=disable
-      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
+      DATABASE_URL: postgresql://reach:${SERVICE_PASSWORD_POSTGRES:-reach}@postgres:5432/reach?sslmode=disable
+      JWT_SECRET: ${SERVICE_PASSWORD_JWT:-changeme-jwt-secret-64-chars-long-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx}
       ACCOUNTS_URL: ${ACCOUNTS_URL:-https://accounts.gour.io}
       ACCOUNTS_API_URL: ${ACCOUNTS_API_URL:-}
-      APP_URL: ${APP_URL:-http://localhost:4000}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:4000}
+      APP_URL: ${SERVICE_FQDN_APP_4000:-http://localhost:4000}
+      FRONTEND_URL: ${SERVICE_FQDN_APP_4000:-http://localhost:4000}
       SESSION_COOKIE: ${SESSION_COOKIE:-reach-session}
       SESSION_MAX_AGE: ${SESSION_MAX_AGE:-2592000}
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
@@ -49,10 +53,10 @@ services:
       SPA_DIR: /app/public
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:4000/health"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 volumes:
   pgdata:
