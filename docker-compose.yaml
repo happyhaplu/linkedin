@@ -1,16 +1,16 @@
 # ============================================================================
-# Reach — Docker Compose for Coolify
+# Reach — Docker Compose for Coolify (zero-config)
 # ============================================================================
-# Coolify auto-detects this file and deploys all services.
+# HOW TO DEPLOY:
+#   1. Create new Docker Compose service in Coolify
+#   2. Connect this GitHub repo (happyhaplu/linkedin, branch: main)
+#   3. Set domain "reach.gour.io" on the "app" service
+#   4. Deploy — that's it, everything else is automatic
 #
-# Coolify auto-generates these variables (no manual config needed):
-#   SERVICE_URL_APP             → https://reach.gour.io (from domain field)
-#   SERVICE_FQDN_APP            → reach.gour.io
-#   SERVICE_PASSWORD_POSTGRES   → random DB password
-#   SERVICE_PASSWORD_64_JWT     → random 64-char JWT secret
-#
-# The ONLY thing you set in Coolify is the domain (reach.gour.io).
-# Everything else is automatic.
+# Coolify auto-generates these variables:
+#   SERVICE_URL_APP           → https://reach.gour.io (from your domain)
+#   SERVICE_PASSWORD_POSTGRES → random DB password
+#   SERVICE_PASSWORD_JWT      → random JWT secret
 # ============================================================================
 
 services:
@@ -31,7 +31,7 @@ services:
       retries: 10
       start_period: 5s
 
-  # ── Reach App (Go backend + Vue frontend) ─────────────────────────────────
+  # ── Reach App (Go backend + Vue SPA) ──────────────────────────────────────
   app:
     build:
       context: .
@@ -45,7 +45,7 @@ services:
     environment:
       PORT: "4000"
       DATABASE_URL: postgresql://reach:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/reach?sslmode=disable
-      JWT_SECRET: ${SERVICE_PASSWORD_64_JWT}
+      JWT_SECRET: ${SERVICE_PASSWORD_JWT}
       ACCOUNTS_URL: https://accounts.gour.io
       APP_URL: ${SERVICE_URL_APP:-https://reach.gour.io}
       FRONTEND_URL: ${SERVICE_URL_APP:-https://reach.gour.io}
