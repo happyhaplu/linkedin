@@ -3,10 +3,14 @@
 # ============================================================================
 # Coolify auto-detects this file and deploys all services.
 #
-# Coolify magic variables (auto-generated, no manual setup needed):
-#   SERVICE_FQDN_APP_4000  → your domain (e.g. https://reach.gour.io)
-#   SERVICE_PASSWORD_POSTGRES → random DB password
-#   SERVICE_PASSWORD_JWT      → random JWT secret
+# Coolify auto-generates these variables (no manual config needed):
+#   SERVICE_URL_APP             → https://reach.gour.io (from domain field)
+#   SERVICE_FQDN_APP            → reach.gour.io
+#   SERVICE_PASSWORD_POSTGRES   → random DB password
+#   SERVICE_PASSWORD_64_JWT     → random 64-char JWT secret
+#
+# The ONLY thing you set in Coolify is the domain (reach.gour.io).
+# Everything else is automatic.
 # ============================================================================
 
 services:
@@ -19,13 +23,13 @@ services:
     environment:
       POSTGRES_DB: reach
       POSTGRES_USER: reach
-      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRES:-reach}
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRES}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U reach -d reach"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
   # ── Reach App (Go backend + Vue frontend) ─────────────────────────────────
   app:
@@ -40,16 +44,15 @@ services:
         condition: service_healthy
     environment:
       PORT: "4000"
-      DATABASE_URL: postgresql://reach:${SERVICE_PASSWORD_POSTGRES:-reach}@postgres:5432/reach?sslmode=disable
-      JWT_SECRET: ${SERVICE_PASSWORD_JWT:-changeme-jwt-secret-64-chars-long-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx}
-      ACCOUNTS_URL: ${ACCOUNTS_URL:-https://accounts.gour.io}
-      ACCOUNTS_API_URL: ${ACCOUNTS_API_URL:-}
-      APP_URL: ${SERVICE_FQDN_APP_4000:-http://localhost:4000}
-      FRONTEND_URL: ${SERVICE_FQDN_APP_4000:-http://localhost:4000}
-      SESSION_COOKIE: ${SESSION_COOKIE:-reach-session}
-      SESSION_MAX_AGE: ${SESSION_MAX_AGE:-2592000}
-      COOKIE_SECURE: ${COOKIE_SECURE:-true}
-      COOKIE_SAMESITE: ${COOKIE_SAMESITE:-Lax}
+      DATABASE_URL: postgresql://reach:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/reach?sslmode=disable
+      JWT_SECRET: ${SERVICE_PASSWORD_64_JWT}
+      ACCOUNTS_URL: https://accounts.gour.io
+      APP_URL: ${SERVICE_URL_APP:-https://reach.gour.io}
+      FRONTEND_URL: ${SERVICE_URL_APP:-https://reach.gour.io}
+      SESSION_COOKIE: reach-session
+      SESSION_MAX_AGE: "2592000"
+      COOKIE_SECURE: "true"
+      COOKIE_SAMESITE: Lax
       SPA_DIR: /app/public
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:4000/health"]
