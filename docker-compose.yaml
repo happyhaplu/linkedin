@@ -1,0 +1,58 @@
+# ============================================================================
+# Reach — Docker Compose for Coolify
+# ============================================================================
+# Coolify auto-detects docker-compose.yml and deploys all services.
+# Set the environment variables in Coolify's UI or .env file.
+# ============================================================================
+
+services:
+  # ── PostgreSQL ─────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-reach}
+      POSTGRES_USER: ${POSTGRES_USER:-reach}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-reach} -d ${POSTGRES_DB:-reach}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ── Reach App (Go backend + Vue frontend) ─────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${PORT:-4000}:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: "4000"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-reach}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-reach}?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
+      ACCOUNTS_URL: ${ACCOUNTS_URL:-https://accounts.gour.io}
+      ACCOUNTS_API_URL: ${ACCOUNTS_API_URL:-}
+      APP_URL: ${APP_URL:-http://localhost:4000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:4000}
+      SESSION_COOKIE: ${SESSION_COOKIE:-reach-session}
+      SESSION_MAX_AGE: ${SESSION_MAX_AGE:-2592000}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      COOKIE_SAMESITE: ${COOKIE_SAMESITE:-Lax}
+      SPA_DIR: /app/public
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  pgdata:
