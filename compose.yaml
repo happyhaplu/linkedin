@@ -45,7 +45,7 @@ services:
     environment:
       PORT: "4000"
       DATABASE_URL: postgresql://reach:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/reach?sslmode=disable
-      JWT_SECRET: ${SERVICE_PASSWORD_JWT}
+      JWT_SECRET: outcraftly-dev-secret-do-not-use-in-production
       ACCOUNTS_URL: https://accounts.gour.io
       APP_URL: ${SERVICE_URL_APP:-https://reach.gour.io}
       FRONTEND_URL: ${SERVICE_URL_APP:-https://reach.gour.io}
