@@ -33,9 +33,8 @@ func Setup(app *fiber.App, cfg *config.Config, db *gorm.DB, workerMgr *workers.W
 	// ── Auth routes (no session required) ───────────────────────────────────
 	app.Get("/callback", handler.CallbackHandler(cfg, db))
 	authGroup := app.Group("/auth")
-	authGroup.Get("/callback", handler.CallbackHandler(cfg, db)) // legacy fallback
 	authGroup.Post("/signout", handler.SignOutHandler(cfg, db))
-	authGroup.Get("/signout", handler.SignOutHandler(cfg, db)) // support GET for link-based sign out
+	authGroup.Get("/signout", handler.SignOutHandler(cfg, db))
 
 	// ── API routes (session required) ───────────────────────────────────────
 	api := app.Group("/api", mw.RequireAuth(cfg, db))

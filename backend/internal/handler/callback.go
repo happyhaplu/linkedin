@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// CallbackHandler handles GET /auth/callback?token=<launch-token>&next=/dashboard
+// CallbackHandler handles GET /callback?token=<launch-token>&next=/dashboard
 //
 // Flow:
 //  1. Accounts authenticates the user and redirects here with ?token=<jwt>.

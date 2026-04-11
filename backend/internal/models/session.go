@@ -8,7 +8,7 @@ import (
 )
 
 // Session is a DB-backed auth session. No JWT, no shared secret.
-// Created on /auth/callback after Accounts API verifies the launch token.
+// Created on /callback after Accounts API verifies the launch token.
 // The session ID (UUID) is stored in the reach-session cookie.
 type Session struct {
 	ID            string    `gorm:"type:uuid;primaryKey" json:"id"`
