@@ -4,10 +4,10 @@
  *
  * Auth flow:
  * 1. User visits /login
- * 2. We redirect to: accounts.gour.io/products/reach/launch?redirect_uri=<backend>/auth/callback
+ * 2. We redirect to: accounts.gour.io/products/reach/launch?redirect_uri=<origin>/callback
  * 3. Accounts authenticates the user, signs a launch JWT
- * 4. Accounts redirects to Go backend: /auth/callback?token=<jwt>
- * 5. Go backend verifies JWT, sets session cookies, redirects to frontend /dashboard
+ * 4. Accounts redirects to Go backend: /callback?token=<jwt>
+ * 5. Go backend verifies token via API, creates DB session, redirects to frontend /dashboard
  * 6. Vue router guard sees the cookie, allows access
  */
 import { onMounted } from 'vue'
@@ -29,11 +29,11 @@ onMounted(async () => {
 
   // Redirect to Accounts service for authentication
   // The Go backend's AppURL is the same origin (proxied via Vite in dev)
-  // Accounts will redirect back to: <APP_URL>/auth/callback?token=<jwt>
-  // Then the Go backend redirects to: <FRONTEND_URL>/dashboard
+  // Accounts will redirect back to: <origin>/callback?token=<jwt>
+  // Then the Go backend verifies via API, creates session, redirects to /dashboard
   const backendUrl = window.location.origin
   const accountsUrl = 'https://accounts.gour.io'
-  const callbackUrl = `${backendUrl}/auth/callback`
+  const callbackUrl = `${backendUrl}/callback`
   const loginUrl = `${accountsUrl}/products/reach/launch?redirect_uri=${encodeURIComponent(callbackUrl)}`
 
   window.location.href = loginUrl
