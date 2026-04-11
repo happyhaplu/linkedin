@@ -29,7 +29,12 @@ func Connect(dsn string) *gorm.DB {
 
 	log.Println("[DB] Connected to PostgreSQL")
 
-	// Auto-migrate all models — adds any missing columns/indexes safely
+	// Migrate Session table first — critical for auth to work
+	if err := db.AutoMigrate(&models.Session{}); err != nil {
+		log.Printf("[DB] Session migrate warning: %v", err)
+	}
+
+	// Auto-migrate all remaining models — adds any missing columns/indexes safely
 	if err := db.AutoMigrate(
 		&models.Lead{},
 		&models.LeadList{},
@@ -50,7 +55,6 @@ func Connect(dsn string) *gorm.DB {
 		&models.NetworkSyncLog{},
 		&models.Conversation{},
 		&models.Message{},
-		&models.Session{},
 	); err != nil {
 		log.Printf("[DB] AutoMigrate warning: %v", err)
 	} else {

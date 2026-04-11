@@ -82,7 +82,7 @@ func main() {
 	addr := ":" + cfg.Port
 	log.Printf("[Server] 🚀 Reach backend listening on %s", addr)
 	log.Printf("[Server] Accounts URL: %s", cfg.AccountsURL)
-	log.Printf("[Server] Callback URL: %s/auth/callback", cfg.AppURL)
+	log.Printf("[Server] Callback URL: %s/callback", cfg.FrontendURL)
 
 	if err := app.Listen(addr); err != nil {
 		log.Fatalf("[Server] Failed to start: %v", err)

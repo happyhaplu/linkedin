@@ -334,7 +334,7 @@ type CampaignWebhook struct {
 	URL         string      `gorm:"type:text;not null" json:"url"`
 	Secret      *string     `gorm:"type:text" json:"secret,omitempty"`
 	Description *string     `gorm:"type:text" json:"description,omitempty"`
-	Events      StringArray `gorm:"type:jsonb" json:"events"`
+	Events      StringArray `gorm:"type:text[]" json:"events"`
 	IsActive    bool        `gorm:"default:true" json:"is_active"`
 	CreatedAt   time.Time   `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt   time.Time   `gorm:"autoUpdateTime" json:"updated_at"`

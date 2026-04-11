@@ -104,7 +104,7 @@ func CheckSubscription(cfg *config.Config, accountsToken string) (*CheckResponse
 
 // LoginURL builds the Accounts login URL for the Reach product.
 func LoginURL(cfg *config.Config, nextPath string) string {
-	callbackURL := fmt.Sprintf("%s/auth/callback", cfg.AppURL)
+	callbackURL := fmt.Sprintf("%s/callback", cfg.FrontendURL)
 	return fmt.Sprintf("%s/products/reach/launch?redirect_uri=%s",
 		cfg.AccountsURL,
 		callbackURL,
