@@ -18,14 +18,16 @@ type Config struct {
 	AccountsURL    string // Public URL for browser redirects
 	AccountsAPIURL string // Server-to-server URL (may differ in Docker/k8s)
 
+	// Product API key for authenticating with Accounts service
+	AccountsAPIKey string
+
 	// This app's own public URL
 	AppURL string
 
-	// Frontend (Next.js) URL — callback redirects go here
+	// Frontend (Vue) URL — callback redirects go here
 	FrontendURL string
 
-	// JWT / session
-	JWTSecret      string
+	// Session
 	SessionCookie  string
 	SessionMaxAge  time.Duration
 	CookieSecure   bool
@@ -49,12 +51,12 @@ func Load() *Config {
 
 		AccountsURL:    accountsURL,
 		AccountsAPIURL: getEnv("ACCOUNTS_API_URL", accountsURL),
+		AccountsAPIKey: getEnv("ACCOUNTS_API_KEY", ""),
 
 		AppURL: getEnv("APP_URL", "http://localhost:4000"),
 
 		FrontendURL: getEnv("FRONTEND_URL", "http://localhost:3000"),
 
-		JWTSecret:      getEnv("JWT_SECRET", ""),
 		SessionCookie:  getEnv("SESSION_COOKIE", "reach-session"),
 		SessionMaxAge:  time.Duration(maxAgeSec) * time.Second,
 		CookieSecure:   secure,

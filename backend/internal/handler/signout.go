@@ -1,34 +1,33 @@
 package handler
 
 import (
+	"log"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/reach/backend/internal/auth"
 	"github.com/reach/backend/internal/config"
+	"github.com/reach/backend/internal/models"
+	"gorm.io/gorm"
 )
 
-// SignOutHandler handles POST /auth/signout
+// SignOutHandler handles POST/GET /auth/signout
 //
-// Clears both the Reach session cookie and the Accounts token cookie,
-// then returns the Accounts sign-out URL for the frontend to navigate to.
-func SignOutHandler(cfg *config.Config) fiber.Handler {
+// Deletes the DB session, clears the session cookie, then either
+// redirects (GET) or returns the Accounts logout URL (POST/fetch).
+func SignOutHandler(cfg *config.Config, db *gorm.DB) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		// Delete DB session if cookie present
+		sessionID := c.Cookies(cfg.SessionCookie)
+		if sessionID != "" {
+			if err := db.Where("id = ?", sessionID).Delete(&models.Session{}).Error; err != nil {
+				log.Printf("[SignOut] Failed to delete session %s: %v", sessionID, err)
+			}
+		}
+
 		// Clear session cookie
 		c.Cookie(&fiber.Cookie{
 			Name:     cfg.SessionCookie,
-			Value:    "",
-			Path:     "/",
-			MaxAge:   -1,
-			Expires:  time.Now().Add(-1 * time.Hour),
-			HTTPOnly: true,
-			Secure:   cfg.CookieSecure,
-			SameSite: cfg.CookieSameSite,
-		})
-
-		// Clear Accounts token cookie
-		c.Cookie(&fiber.Cookie{
-			Name:     "reach-accounts-token",
 			Value:    "",
 			Path:     "/",
 			MaxAge:   -1,

@@ -8,19 +8,20 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/reach/backend/internal/auth"
 	"github.com/reach/backend/internal/config"
+	"github.com/reach/backend/internal/models"
+	"gorm.io/gorm"
 )
 
-// CallbackHandler handles GET /auth/callback?token=<accounts-jwt>&next=/dashboard
+// CallbackHandler handles GET /auth/callback?token=<launch-token>&next=/dashboard
 //
 // Flow:
 //  1. Accounts authenticates the user and redirects here with ?token=<jwt>.
-//  2. We verify the launch token locally (shared JWT_SECRET, HS256).
-//  3. If valid → sign a local Reach session JWT, set cookies, redirect to frontend.
-//  4. If invalid → redirect to Accounts login.
+//  2. We call Accounts POST /api/v1/products/verify with our API key.
+//  3. Accounts validates its own token and returns user data.
+//  4. We create a DB session, set a cookie with the session UUID, redirect.
 //
-// Note: Accounts only issues launch tokens for users with active subscriptions,
-// so there is no separate subscription gate here.
-func CallbackHandler(cfg *config.Config) fiber.Handler {
+// No local JWT parsing. No shared secret. Purely API-based.
+func CallbackHandler(cfg *config.Config, db *gorm.DB) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		token := c.Query("token")
 		next := c.Query("next", "/dashboard")
@@ -31,28 +32,37 @@ func CallbackHandler(cfg *config.Config) fiber.Handler {
 			return c.Redirect(auth.LoginURL(cfg, next), fiber.StatusTemporaryRedirect)
 		}
 
-		// ── 2. Verify launch token locally (HS256 with shared secret) ──────
-		result, err := auth.VerifyLaunchToken(cfg, token)
-		if err != nil || result == nil {
+		// ── 2. Verify launch token via Accounts API ────────────────────────
+		result, err := auth.VerifyToken(cfg, token)
+		if err != nil {
 			log.Printf("[Callback] Token verification failed: %v", err)
 			return c.Redirect(auth.LoginURL(cfg, ""), fiber.StatusTemporaryRedirect)
 		}
 
-		// ── 3. Sign local session JWT ──────────────────────────────────────
-		sessionToken, err := auth.SignSessionJWT(cfg, result.User, result.Subscription, result.WorkspaceID)
-		if err != nil {
-			log.Printf("[Callback] Failed to sign session JWT: %v", err)
+		// ── 3. Create DB session ───────────────────────────────────────────
+		session := models.Session{
+			UserID:        result.UserID,
+			Email:         result.Email,
+			WorkspaceID:   result.WorkspaceID,
+			Subscribed:    result.Subscribed,
+			AccountsToken: token, // store raw token for server-to-server calls
+			CreatedAt:     time.Now(),
+			ExpiresAt:     time.Now().Add(cfg.SessionMaxAge),
+		}
+
+		if err := db.Create(&session).Error; err != nil {
+			log.Printf("[Callback] Failed to create session: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "Internal error creating session",
 			})
 		}
 
-		// ── 4. Set cookies ─────────────────────────────────────────────────
+		// ── 4. Set session cookie (UUID only — no JWT, no secrets) ─────────
 		maxAge := int(cfg.SessionMaxAge / time.Second)
 
 		c.Cookie(&fiber.Cookie{
 			Name:     cfg.SessionCookie,
-			Value:    sessionToken,
+			Value:    session.ID, // UUID from BeforeCreate hook
 			Path:     "/",
 			MaxAge:   maxAge,
 			HTTPOnly: true,
@@ -60,25 +70,14 @@ func CallbackHandler(cfg *config.Config) fiber.Handler {
 			SameSite: cfg.CookieSameSite,
 		})
 
-		// Persist the raw Accounts launch token for future server-to-server calls
-		c.Cookie(&fiber.Cookie{
-			Name:     "reach-accounts-token",
-			Value:    token,
-			Path:     "/",
-			MaxAge:   maxAge,
-			HTTPOnly: true,
-			Secure:   cfg.CookieSecure,
-			SameSite: cfg.CookieSameSite,
-		})
-
-		// ── 5. Redirect to the requested page on the FRONTEND ────────────
+		// ── 5. Redirect to the requested page on the frontend ──────────────
 		dest := next
 		if dest == "" || dest[0] != '/' {
 			dest = "/dashboard"
 		}
-		// Build an absolute URL on the frontend origin (Next.js)
 		redirectURL, _ := url.JoinPath(cfg.FrontendURL, dest)
-		log.Printf("[Callback] ✅ User %s authenticated, redirecting to %s", result.User.Email, redirectURL)
+		log.Printf("[Callback] ✅ User %s authenticated (session %s), redirecting to %s",
+			result.Email, session.ID, redirectURL)
 		return c.Redirect(redirectURL, fiber.StatusTemporaryRedirect)
 	}
 }

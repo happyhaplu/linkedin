@@ -32,19 +32,19 @@ func Setup(app *fiber.App, cfg *config.Config, db *gorm.DB, workerMgr *workers.W
 
 	// ── Auth routes (no session required) ───────────────────────────────────
 	authGroup := app.Group("/auth")
-	authGroup.Get("/callback", handler.CallbackHandler(cfg))
-	authGroup.Post("/signout", handler.SignOutHandler(cfg))
-	authGroup.Get("/signout", handler.SignOutHandler(cfg)) // support GET for link-based sign out
+	authGroup.Get("/callback", handler.CallbackHandler(cfg, db))
+	authGroup.Post("/signout", handler.SignOutHandler(cfg, db))
+	authGroup.Get("/signout", handler.SignOutHandler(cfg, db)) // support GET for link-based sign out
 
 	// ── API routes (session required) ───────────────────────────────────────
-	api := app.Group("/api", mw.RequireAuth(cfg))
+	api := app.Group("/api", mw.RequireAuth(cfg, db))
 
 	// Auth introspection
 	api.Get("/auth/me", handler.MeHandler())
 
 	// Check route — proxies to Accounts for real-time subscription validation
 	// Uses the stricter middleware that calls Accounts /check on every request
-	api.Get("/auth/check", mw.RequireAuthWithCheck(cfg), handler.CheckHandler(cfg))
+	api.Get("/auth/check", mw.RequireAuthWithCheck(cfg, db), handler.CheckHandler(cfg, db))
 
 	// ── Profile ─────────────────────────────────────────────────────────────
 	api.Get("/profile", handler.ProfileHandler(cfg))

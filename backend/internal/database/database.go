@@ -50,6 +50,7 @@ func Connect(dsn string) *gorm.DB {
 		&models.NetworkSyncLog{},
 		&models.Conversation{},
 		&models.Message{},
+		&models.Session{},
 	); err != nil {
 		log.Printf("[DB] AutoMigrate warning: %v", err)
 	} else {

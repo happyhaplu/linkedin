@@ -25,8 +25,8 @@ func main() {
 	cfg := config.Load()
 
 	// ── Validate critical config ────────────────────────────────────────────
-	if cfg.JWTSecret == "" {
-		log.Fatal("[FATAL] JWT_SECRET is required. Set it in .env or environment.")
+	if cfg.AccountsAPIKey == "" {
+		log.Fatal("[FATAL] ACCOUNTS_API_KEY is required. Set it in .env or environment.")
 	}
 	if cfg.AccountsURL == "" {
 		log.Fatal("[FATAL] ACCOUNTS_URL is required.")

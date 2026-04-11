@@ -7,28 +7,43 @@ import (
 	"github.com/reach/backend/internal/auth"
 	"github.com/reach/backend/internal/config"
 	"github.com/reach/backend/internal/middleware"
+	"github.com/reach/backend/internal/models"
+	"gorm.io/gorm"
 )
 
 // CheckHandler handles GET /api/auth/check
 //
-// It calls Accounts GET /api/v1/products/reach/check to re-validate that
-// the user still has an active subscription. The session JWT (already
-// verified by RequireAuth middleware) provides the user context.
-func CheckHandler(cfg *config.Config) fiber.Handler {
+// It reads the accounts token from the DB session and calls
+// Accounts GET /api/v1/products/reach/check to re-validate
+// that the user still has an active subscription.
+func CheckHandler(cfg *config.Config, db *gorm.DB) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// Prefer the raw Accounts launch token for the bearer call
-		token := c.Cookies("reach-accounts-token")
-		if token == "" {
-			token = c.Cookies(cfg.SessionCookie)
-		}
-		if token == "" {
+		// Session ID was set by RequireAuth middleware
+		sessionID, _ := c.Locals(middleware.LocalsSessionID).(string)
+		if sessionID == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"valid": false,
-				"error": "No session token",
+				"error": "No session",
 			})
 		}
 
-		result, err := auth.CheckSubscription(cfg, token)
+		// Get the raw accounts token from the DB session
+		var session models.Session
+		if err := db.Where("id = ?", sessionID).First(&session).Error; err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"valid": false,
+				"error": "Session not found",
+			})
+		}
+
+		if session.AccountsToken == "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"valid": false,
+				"error": "No accounts token in session",
+			})
+		}
+
+		result, err := auth.CheckSubscription(cfg, session.AccountsToken)
 		if err != nil {
 			log.Printf("[Check] Accounts /check failed: %v", err)
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -38,6 +53,8 @@ func CheckHandler(cfg *config.Config) fiber.Handler {
 		}
 
 		if !result.Active {
+			// Update session — subscription lapsed
+			db.Model(&session).Update("subscribed", false)
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
 				"valid":  false,
 				"active": false,
