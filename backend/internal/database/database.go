@@ -61,5 +61,16 @@ func Connect(dsn string) *gorm.DB {
 		log.Println("[DB] AutoMigrate complete — all tables up to date")
 	}
 
+	// Migrate billing + admin tables
+	if err := db.AutoMigrate(
+		&models.Plan{},
+		&models.UserPlan{},
+		&models.AdminSession{},
+	); err != nil {
+		log.Printf("[DB] Billing migrate warning: %v", err)
+	} else {
+		log.Println("[DB] Billing tables ready")
+	}
+
 	return db
 }

@@ -5,6 +5,10 @@ export interface AuthUser {
   email: string
   subscribed: boolean
   plan: string
+  plan_type: 'stripe' | 'custom' | null
+  plan_status: string
+  plan_active: boolean
+  sender_limit: number
   workspace_id: string
 }
 

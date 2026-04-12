@@ -21,6 +21,16 @@ type Config struct {
 	// Product API key for authenticating with Accounts service
 	AccountsAPIKey string
 
+	// Stripe billing
+	StripeSecretKey      string
+	StripePublishableKey string
+	StripeWebhookSecret  string
+	StripeProductID      string
+
+	// Admin credentials (set via env — not stored in DB)
+	AdminEmail    string
+	AdminPassword string
+
 	// This app's own public URL
 	AppURL string
 
@@ -52,6 +62,14 @@ func Load() *Config {
 		AccountsURL:    accountsURL,
 		AccountsAPIURL: getEnv("ACCOUNTS_API_URL", accountsURL),
 		AccountsAPIKey: getEnv("ACCOUNTS_API_KEY", ""),
+
+		StripeSecretKey:      getEnv("STRIPE_SECRET_KEY", ""),
+		StripePublishableKey: getEnv("STRIPE_PUBLISHABLE_KEY", ""),
+		StripeWebhookSecret:  getEnv("STRIPE_WEBHOOK_SECRET", ""),
+		StripeProductID:      getEnv("STRIPE_PRODUCT_ID", "prod_UJmmEKdiI6m3c8"),
+
+		AdminEmail:    getEnv("ADMIN_EMAIL", ""),
+		AdminPassword: getEnv("ADMIN_PASSWORD", ""),
 
 		AppURL: getEnv("APP_URL", "http://localhost:4000"),
 

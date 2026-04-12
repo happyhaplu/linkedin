@@ -57,6 +57,22 @@ func CallbackHandler(cfg *config.Config, db *gorm.DB) fiber.Handler {
 			})
 		}
 
+		var userPlan models.UserPlan
+		err = db.Where("workspace_id = ?", result.WorkspaceID).First(&userPlan).Error
+		if err == gorm.ErrRecordNotFound {
+			userPlan = models.UserPlan{
+				WorkspaceID: result.WorkspaceID,
+				UserEmail:   result.Email,
+				Status:      models.UserPlanInactive,
+				IsActive:    true,
+			}
+			if createErr := db.Create(&userPlan).Error; createErr != nil {
+				log.Printf("[Callback] Failed to create user plan: %v", createErr)
+			}
+		} else if err == nil && userPlan.UserEmail != result.Email {
+			db.Model(&userPlan).Update("user_email", result.Email)
+		}
+
 		// ── 4. Set session cookie (UUID only — no JWT, no secrets) ─────────
 		maxAge := int(cfg.SessionMaxAge / time.Second)
 

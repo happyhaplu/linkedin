@@ -17,6 +17,10 @@ func MeHandler() fiber.Handler {
 				"email":        c.Locals(middleware.LocalsEmail),
 				"subscribed":   c.Locals(middleware.LocalsSubscribed),
 				"plan":         c.Locals(middleware.LocalsPlan),
+				"plan_type":    c.Locals(middleware.LocalsPlanType),
+				"plan_status":  c.Locals(middleware.LocalsPlanStatus),
+				"plan_active":  c.Locals(middleware.LocalsPlanActive),
+				"sender_limit": c.Locals(middleware.LocalsSenderLimit),
 				"workspace_id": c.Locals(middleware.LocalsWorkspaceID),
 			},
 		})

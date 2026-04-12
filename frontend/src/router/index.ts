@@ -1,15 +1,60 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
+// Inject Stripe.js once for the pricing table web component
+function ensureStripeJs() {
+  if (document.querySelector('script[data-stripe]')) return
+  const s = document.createElement('script')
+  s.src = 'https://js.stripe.com/v3/pricing-table.js'
+  s.async = true
+  s.setAttribute('data-stripe', '1')
+  document.head.appendChild(s)
+}
+
 const routes: RouteRecordRaw[] = [
-  // ── Public routes (no auth required) ──────────────────────────────────
+  // ── Fully public ──────────────────────────────────────────────────────
   {
     path: '/login',
     name: 'login',
     component: () => import('@/pages/LoginPage.vue'),
     meta: { public: true },
   },
-  // ── Protected routes (require auth) ───────────────────────────────────
+  // Pricing — accessible when logged in but no plan
+  {
+    path: '/pricing',
+    name: 'pricing',
+    component: () => import('@/pages/PricingPage.vue'),
+    meta: { public: false, noPlanOk: true },
+    beforeEnter: () => ensureStripeJs(),
+  },
+
+  // ── Admin (separate session cookie, independent from user auth) ───────
+  {
+    path: '/admin/login',
+    name: 'admin-login',
+    component: () => import('@/pages/admin/AdminLoginPage.vue'),
+    meta: { public: true, admin: true },
+  },
+  {
+    path: '/admin',
+    component: () => import('@/layouts/AdminLayout.vue'),
+    meta: { admin: true },
+    children: [
+      { path: '', redirect: '/admin/users' },
+      {
+        path: 'users',
+        name: 'admin-users',
+        component: () => import('@/pages/admin/AdminUsersPage.vue'),
+      },
+      {
+        path: 'plans',
+        name: 'admin-plans',
+        component: () => import('@/pages/admin/AdminPlansPage.vue'),
+      },
+    ],
+  },
+
+  // ── User app (requires auth + active plan) ────────────────────────────
   {
     path: '/',
     redirect: '/linkedin-account',
@@ -91,21 +136,32 @@ const router = createRouter({
   routes,
 })
 
-// ── Navigation guard: check auth before entering protected routes ────────
+// ── Navigation guard ─────────────────────────────────────────────────────
 router.beforeEach(async (to) => {
-  // Allow public routes (login)
+  // Admin routes use their own cookie — skip user auth checks
+  if (to.meta.admin) return true
+
+  // Truly public (login page)
   if (to.meta.public) return true
 
   const authStore = useAuthStore()
 
-  // Fetch user if not checked yet (first load / hard refresh)
+  // Fetch user once per session load
   if (!authStore.checked) {
     await authStore.fetchUser()
   }
 
-  // Not authenticated → redirect to login
+  // Not authenticated → login
   if (!authStore.isAuthenticated) {
     return { name: 'login' }
+  }
+
+  // Pricing page: always accessible for authenticated users (to let them checkout)
+  if (to.meta.noPlanOk) return true
+
+  // No active plan → /pricing
+  if (!authStore.hasPlan) {
+    return { name: 'pricing' }
   }
 
   return true

@@ -9,6 +9,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!user.value)
   const userEmail = computed(() => user.value?.email || '')
+  const hasPlan = computed(() => !!user.value?.plan_active)
+  const planStatus = computed(() => user.value?.plan_status || 'inactive')
+  const senderLimit = computed(() => user.value?.sender_limit ?? 0)
 
   /**
    * Fetch the current session from the Go backend.
@@ -49,6 +52,9 @@ export const useAuthStore = defineStore('auth', () => {
     checked,
     isAuthenticated,
     userEmail,
+    hasPlan,
+    planStatus,
+    senderLimit,
     fetchUser,
     signOut,
   }

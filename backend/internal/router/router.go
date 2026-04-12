@@ -32,12 +32,26 @@ func Setup(app *fiber.App, cfg *config.Config, db *gorm.DB, workerMgr *workers.W
 
 	// ── Auth routes (no session required) ───────────────────────────────────
 	app.Get("/callback", handler.CallbackHandler(cfg, db))
+	app.Post("/stripe/webhook", handler.StripeWebhookHandler(cfg, db))
 	authGroup := app.Group("/auth")
 	authGroup.Post("/signout", handler.SignOutHandler(cfg, db))
 	authGroup.Get("/signout", handler.SignOutHandler(cfg, db))
 
+	admin := app.Group("/admin")
+	admin.Post("/login", handler.AdminLoginHandler(cfg, db))
+	admin.Post("/logout", handler.AdminLogoutHandler(cfg, db))
+	admin.Get("/me", mw.RequireAdmin(db), handler.AdminMeHandler(db))
+	admin.Get("/users", mw.RequireAdmin(db), handler.AdminListUsersHandler(db))
+	admin.Get("/users/:workspace_id", mw.RequireAdmin(db), handler.AdminGetUserHandler(db))
+	admin.Put("/users/:workspace_id", mw.RequireAdmin(db), handler.AdminUpdateUserHandler(db))
+	admin.Post("/users/:workspace_id/assign-plan", mw.RequireAdmin(db), handler.AdminAssignCustomPlanHandler(db))
+	admin.Get("/plans", mw.RequireAdmin(db), handler.AdminListPlansHandler(db))
+	admin.Post("/plans", mw.RequireAdmin(db), handler.AdminCreatePlanHandler(db))
+	admin.Put("/plans/:id", mw.RequireAdmin(db), handler.AdminUpdatePlanHandler(db))
+
 	// ── API routes (session required) ───────────────────────────────────────
-	api := app.Group("/api", mw.RequireAuth(cfg, db))
+	api := app.Group("/api", mw.RequireSession(cfg, db))
+	protected := api.Group("", mw.RequireAuth(cfg, db))
 
 	// Auth introspection
 	api.Get("/auth/me", handler.MeHandler())
@@ -45,30 +59,32 @@ func Setup(app *fiber.App, cfg *config.Config, db *gorm.DB, workerMgr *workers.W
 	// Check route — proxies to Accounts for real-time subscription validation
 	// Uses the stricter middleware that calls Accounts /check on every request
 	api.Get("/auth/check", mw.RequireAuthWithCheck(cfg, db), handler.CheckHandler(cfg, db))
+	api.Post("/billing/checkout", handler.BillingCheckoutHandler(cfg, db))
+	api.Post("/billing/portal", handler.BillingPortalHandler(cfg, db))
 
 	// ── Profile ─────────────────────────────────────────────────────────────
-	api.Get("/profile", handler.ProfileHandler(cfg))
+	protected.Get("/profile", handler.ProfileHandler(cfg))
 
 	// ── Account Management Module ───────────────────────────────────────────
-	setupAccountRoutes(api, db)
+	setupAccountRoutes(protected, db)
 
 	// ── Campaign Engine Module ──────────────────────────────────────────────
-	setupCampaignRoutes(api, db, browserMgr)
+	setupCampaignRoutes(protected, db, browserMgr)
 
 	// ── Lead Management Module ──────────────────────────────────────────────
-	setupLeadRoutes(api, db)
+	setupLeadRoutes(protected, db)
 
 	// ── My Network Module ───────────────────────────────────────────────────
-	setupNetworkRoutes(api, db, browserMgr)
+	setupNetworkRoutes(protected, db, browserMgr)
 
 	// ── Unibox (Unified Inbox) Module ───────────────────────────────────────
-	setupUniboxRoutes(api, db, workerMgr)
+	setupUniboxRoutes(protected, db, workerMgr)
 
 	// ── Analytics Module ────────────────────────────────────────────────────
-	setupAnalyticsRoutes(api, db)
+	setupAnalyticsRoutes(protected, db)
 
 	// ── Queue Management Routes ─────────────────────────────────────────────
-	setupQueueRoutes(api, workerMgr)
+	setupQueueRoutes(protected, workerMgr)
 
 	// ── SPA Static Files (production only) ──────────────────────────────────
 	// In production, the Vue frontend is built and placed in /app/public.

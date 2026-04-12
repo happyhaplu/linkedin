@@ -12,14 +12,17 @@ api.interceptors.response.use(
   (error) => {
     // On 401 → session expired or not authenticated → redirect to login
     if (error.response?.status === 401) {
-      // Avoid redirect loop if already on login page
       if (!window.location.pathname.startsWith('/login')) {
         window.location.href = '/login'
       }
       return Promise.reject(new Error('Authentication required'))
     }
-
-    const message = error.response?.data?.error || error.message || 'An error occurred'
+    // On 402 → no active plan → redirect to pricing
+    if (error.response?.status === 402) {
+      if (!window.location.pathname.startsWith('/pricing')) {
+        window.location.href = '/pricing'
+      }
+      return Promise.reject(new Error('Active billing plan required'))
     return Promise.reject(new Error(message))
   }
 )
