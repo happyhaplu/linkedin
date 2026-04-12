@@ -49,9 +49,12 @@ func Setup(app *fiber.App, cfg *config.Config, db *gorm.DB, workerMgr *workers.W
 	admin.Post("/plans", mw.RequireAdmin(db), handler.AdminCreatePlanHandler(db))
 	admin.Put("/plans/:id", mw.RequireAdmin(db), handler.AdminUpdatePlanHandler(db))
 
-	// ── API routes (session required) ───────────────────────────────────────
+	// ── API routes ──────────────────────────────────────────────────────────
+	// session-only routes (billing info populated, but no plan gate)
 	api := app.Group("/api", mw.RequireSession(cfg, db))
-	protected := api.Group("", mw.RequireAuth(cfg, db))
+	// plan-gated routes (separate app-level group avoids Fiber empty-path
+	// sub-group stacking RequireAuth on top of RequireSession for ALL /api routes)
+	protected := app.Group("/api", mw.RequireAuth(cfg, db))
 
 	// Auth introspection
 	api.Get("/auth/me", handler.MeHandler())

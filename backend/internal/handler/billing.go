@@ -208,11 +208,11 @@ func handleSubscriptionUpsert(db *gorm.DB, raw json.RawMessage) {
 		periodEnd = &t
 	}
 
-	planID := userPlan.PlanID
+	planID := userPlan.PlanID // *string — nil when no plan assigned yet
 	if sub.Items != nil && len(sub.Items.Data) > 0 && sub.Items.Data[0].Price != nil {
 		var plan models.Plan
 		if err := db.Where("stripe_price_id = ? AND type = ?", sub.Items.Data[0].Price.ID, models.PlanTypeStripe).First(&plan).Error; err == nil {
-			planID = plan.ID
+			planID = &plan.ID
 		}
 	}
 

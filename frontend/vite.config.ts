@@ -38,10 +38,17 @@ export default defineConfig({
       '/admin': {
         target: 'http://localhost:4000',
         changeOrigin: true,
+        bypass(req) {
+          // Let browser page navigations fall through to Vite → Vue Router
+          if (req.headers.accept?.includes('text/html')) return req.url
+        },
       },
       '/stripe': {
         target: 'http://localhost:4000',
         changeOrigin: true,
+        bypass(req) {
+          if (req.headers.accept?.includes('text/html')) return req.url
+        },
       },
     },
   },

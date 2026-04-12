@@ -23,7 +23,8 @@ api.interceptors.response.use(
         window.location.href = '/pricing'
       }
       return Promise.reject(new Error('Active billing plan required'))
-    return Promise.reject(new Error(message))
+    }
+    return Promise.reject(error)
   }
 )
 

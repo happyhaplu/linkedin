@@ -62,7 +62,7 @@ type UserPlan struct {
 	ID                     string         `gorm:"type:uuid;primaryKey" json:"id"`
 	WorkspaceID            string         `gorm:"index;not null" json:"workspace_id"`
 	UserEmail              string         `gorm:"not null" json:"user_email"`
-	PlanID                 string         `gorm:"type:uuid" json:"plan_id"`
+	PlanID                 *string        `gorm:"type:uuid" json:"plan_id,omitempty"`
 	Plan                   *Plan          `gorm:"foreignKey:PlanID" json:"plan,omitempty"`
 	Status                 UserPlanStatus `gorm:"type:varchar(20);not null;default:'inactive'" json:"status"`
 	// Stripe fields (empty for custom plans)
