@@ -50,44 +50,46 @@ func Setup(app *fiber.App, cfg *config.Config, db *gorm.DB, workerMgr *workers.W
 	admin.Put("/plans/:id", mw.RequireAdmin(db), handler.AdminUpdatePlanHandler(db))
 
 	// ── API routes ──────────────────────────────────────────────────────────
-	// session-only routes (billing info populated, but no plan gate)
+	// RequireSession runs for ALL /api routes — loads billing context into locals.
 	api := app.Group("/api", mw.RequireSession(cfg, db))
-	// plan-gated routes (separate app-level group avoids Fiber empty-path
-	// sub-group stacking RequireAuth on top of RequireSession for ALL /api routes)
-	protected := app.Group("/api", mw.RequireAuth(cfg, db))
 
-	// Auth introspection
+	// Auth introspection — session-only, no plan gate (frontend needs this to
+	// read plan_active and decide whether to redirect to /pricing)
 	api.Get("/auth/me", handler.MeHandler())
-
-	// Check route — proxies to Accounts for real-time subscription validation
-	// Uses the stricter middleware that calls Accounts /check on every request
 	api.Get("/auth/check", mw.RequireAuthWithCheck(cfg, db), handler.CheckHandler(cfg, db))
+
+	// Billing — session-only (user must be able to reach these before paying)
 	api.Post("/billing/checkout", handler.BillingCheckoutHandler(cfg, db))
 	api.Post("/billing/portal", handler.BillingPortalHandler(cfg, db))
 
-	// ── Profile ─────────────────────────────────────────────────────────────
-	protected.Get("/profile", handler.ProfileHandler(cfg))
+	// Plan gate — passed into each setup function and applied as the first
+	// middleware on each sub-group. This guarantees it runs AFTER RequireSession
+	// (the api Group middleware) has already set LocalsPlanActive in Locals.
+	planGate := mw.RequirePlan()
+
+	// ── Profile ──────────────────────────────────────────────────────────────
+	api.Get("/profile", planGate, handler.ProfileHandler(cfg))
 
 	// ── Account Management Module ───────────────────────────────────────────
-	setupAccountRoutes(protected, db)
+	setupAccountRoutes(api, planGate, db)
 
 	// ── Campaign Engine Module ──────────────────────────────────────────────
-	setupCampaignRoutes(protected, db, browserMgr)
+	setupCampaignRoutes(api, planGate, db, browserMgr)
 
 	// ── Lead Management Module ──────────────────────────────────────────────
-	setupLeadRoutes(protected, db)
+	setupLeadRoutes(api, planGate, db)
 
 	// ── My Network Module ───────────────────────────────────────────────────
-	setupNetworkRoutes(protected, db, browserMgr)
+	setupNetworkRoutes(api, planGate, db, browserMgr)
 
 	// ── Unibox (Unified Inbox) Module ───────────────────────────────────────
-	setupUniboxRoutes(protected, db, workerMgr)
+	setupUniboxRoutes(api, planGate, db, workerMgr)
 
 	// ── Analytics Module ────────────────────────────────────────────────────
-	setupAnalyticsRoutes(protected, db)
+	setupAnalyticsRoutes(api, planGate, db)
 
 	// ── Queue Management Routes ─────────────────────────────────────────────
-	setupQueueRoutes(protected, workerMgr)
+	setupQueueRoutes(api, planGate, workerMgr)
 
 	// ── SPA Static Files (production only) ──────────────────────────────────
 	// In production, the Vue frontend is built and placed in /app/public.
@@ -109,7 +111,7 @@ func Setup(app *fiber.App, cfg *config.Config, db *gorm.DB, workerMgr *workers.W
 }
 
 // setupAccountRoutes registers all LinkedIn account and proxy management routes.
-func setupAccountRoutes(api fiber.Router, db *gorm.DB) {
+func setupAccountRoutes(api fiber.Router, planGate fiber.Handler, db *gorm.DB) {
 	// ── Repositories ────────────────────────────────────────────────────────
 	accountRepo := repository.NewLinkedInAccountRepository(db)
 	proxyRepo := repository.NewProxyRepository(db)
@@ -124,7 +126,7 @@ func setupAccountRoutes(api fiber.Router, db *gorm.DB) {
 	proxyH := handler.NewProxyHandler(proxySvc)
 
 	// ── LinkedIn Accounts ───────────────────────────────────────────────────
-	accounts := api.Group("/linkedin-accounts")
+	accounts := api.Group("/linkedin-accounts", planGate)
 	accounts.Get("/", accountH.ListAccounts())                        // GET    /api/linkedin-accounts
 	accounts.Get("/:id", accountH.GetAccount())                       // GET    /api/linkedin-accounts/:id
 	accounts.Post("/cookie", accountH.CreateWithCookie())              // POST   /api/linkedin-accounts/cookie
@@ -141,7 +143,7 @@ func setupAccountRoutes(api fiber.Router, db *gorm.DB) {
 	accounts.Delete("/:id", accountH.DeleteAccount())                  // DELETE /api/linkedin-accounts/:id
 
 	// ── Proxies ─────────────────────────────────────────────────────────────
-	proxies := api.Group("/proxies")
+	proxies := api.Group("/proxies", planGate)
 	proxies.Get("/", proxyH.ListProxies())         // GET    /api/proxies
 	proxies.Get("/:id", proxyH.GetProxy())         // GET    /api/proxies/:id
 	proxies.Post("/", proxyH.CreateProxy())        // POST   /api/proxies
@@ -151,7 +153,7 @@ func setupAccountRoutes(api fiber.Router, db *gorm.DB) {
 }
 
 // setupCampaignRoutes registers all campaign engine routes.
-func setupCampaignRoutes(api fiber.Router, db *gorm.DB, browserMgr *automation.BrowserManager) {
+func setupCampaignRoutes(api fiber.Router, planGate fiber.Handler, db *gorm.DB, browserMgr *automation.BrowserManager) {
 	// ── Repositories ────────────────────────────────────────────────────────
 	accountRepo := repository.NewLinkedInAccountRepository(db)
 	campaignRepo := repository.NewCampaignRepository(db)
@@ -191,7 +193,7 @@ func setupCampaignRoutes(api fiber.Router, db *gorm.DB, browserMgr *automation.B
 	h := handler.NewCampaignHandler(campaignSvc, executorSvc)
 
 	// ── Campaign CRUD ───────────────────────────────────────────────────────
-	campaigns := api.Group("/campaigns")
+	campaigns := api.Group("/campaigns", planGate)
 	campaigns.Get("/stats", h.GetStats())             // GET    /api/campaigns/stats
 	campaigns.Get("/templates", h.GetTemplates())      // GET    /api/campaigns/templates
 	campaigns.Get("/", h.ListCampaigns())              // GET    /api/campaigns
@@ -247,7 +249,7 @@ func setupCampaignRoutes(api fiber.Router, db *gorm.DB, browserMgr *automation.B
 }
 
 // setupLeadRoutes registers all lead management routes (leads, lists, custom fields).
-func setupLeadRoutes(api fiber.Router, db *gorm.DB) {
+func setupLeadRoutes(api fiber.Router, planGate fiber.Handler, db *gorm.DB) {
 	// ── Repositories ────────────────────────────────────────────────────────
 	leadRepo := repository.NewLeadRepository(db)
 	listRepo := repository.NewLeadListRepository(db)
@@ -260,7 +262,7 @@ func setupLeadRoutes(api fiber.Router, db *gorm.DB) {
 	h := handler.NewLeadHandler(leadSvc)
 
 	// ── Lists ───────────────────────────────────────────────────────────────
-	lists := api.Group("/lists")
+	lists := api.Group("/lists", planGate)
 	lists.Get("/", h.ListLists())        // GET    /api/lists
 	lists.Get("/:id", h.GetList())       // GET    /api/lists/:id
 	lists.Post("/", h.CreateList())      // POST   /api/lists
@@ -268,7 +270,7 @@ func setupLeadRoutes(api fiber.Router, db *gorm.DB) {
 	lists.Delete("/:id", h.DeleteList()) // DELETE /api/lists/:id
 
 	// ── Leads ───────────────────────────────────────────────────────────────
-	leads := api.Group("/leads")
+	leads := api.Group("/leads", planGate)
 	leads.Get("/", h.ListLeads())                                // GET    /api/leads
 	leads.Get("/:id", h.GetLead())                               // GET    /api/leads/:id
 	leads.Post("/import", h.ImportLeads())                       // POST   /api/leads/import
@@ -279,7 +281,7 @@ func setupLeadRoutes(api fiber.Router, db *gorm.DB) {
 	leads.Delete("/:id", h.DeleteLead())                         // DELETE /api/leads/:id
 
 	// ── Custom Fields ───────────────────────────────────────────────────────
-	cf := api.Group("/custom-fields")
+	cf := api.Group("/custom-fields", planGate)
 	cf.Get("/", h.ListCustomFields())        // GET    /api/custom-fields
 	cf.Post("/", h.CreateCustomField())      // POST   /api/custom-fields
 	cf.Put("/:id", h.UpdateCustomField())    // PUT    /api/custom-fields/:id
@@ -287,7 +289,7 @@ func setupLeadRoutes(api fiber.Router, db *gorm.DB) {
 }
 
 // setupNetworkRoutes registers all My Network routes (connections, requests, sync, analytics).
-func setupNetworkRoutes(api fiber.Router, db *gorm.DB, browserMgr *automation.BrowserManager) {
+func setupNetworkRoutes(api fiber.Router, planGate fiber.Handler, db *gorm.DB, browserMgr *automation.BrowserManager) {
 	// ── Repositories ────────────────────────────────────────────────────────
 	connRepo := repository.NewNetworkConnectionRepository(db)
 	reqRepo := repository.NewConnectionRequestRepository(db)
@@ -307,7 +309,7 @@ func setupNetworkRoutes(api fiber.Router, db *gorm.DB, browserMgr *automation.Br
 	h := handler.NewNetworkHandler(networkSvc)
 
 	// ── Connections ─────────────────────────────────────────────────────────
-	conns := api.Group("/network/connections")
+	conns := api.Group("/network/connections", planGate)
 	conns.Get("/stats", h.GetConnectionStats())        // GET    /api/network/connections/stats
 	conns.Get("/", h.ListConnections())                // GET    /api/network/connections
 	conns.Get("/:id", h.GetConnection())               // GET    /api/network/connections/:id
@@ -319,7 +321,7 @@ func setupNetworkRoutes(api fiber.Router, db *gorm.DB, browserMgr *automation.Br
 	conns.Post("/bulk-tags", h.BulkUpdateTags())       // POST   /api/network/connections/bulk-tags
 
 	// ── Connection Requests ─────────────────────────────────────────────────
-	reqs := api.Group("/network/requests")
+	reqs := api.Group("/network/requests", planGate)
 	reqs.Get("/", h.ListRequests())                        // GET    /api/network/requests
 	reqs.Post("/", h.CreateRequest())                      // POST   /api/network/requests
 	reqs.Put("/:id", h.UpdateRequest())                    // PUT    /api/network/requests/:id
@@ -329,17 +331,17 @@ func setupNetworkRoutes(api fiber.Router, db *gorm.DB, browserMgr *automation.Br
 	reqs.Post("/bulk-withdraw", h.BulkWithdrawRequests())  // POST   /api/network/requests/bulk-withdraw
 
 	// ── Sync ────────────────────────────────────────────────────────────────
-	sync := api.Group("/network/sync")
+	sync := api.Group("/network/sync", planGate)
 	sync.Post("/", h.StartSync())               // POST   /api/network/sync
 	sync.Get("/logs", h.GetSyncLogs())           // GET    /api/network/sync/logs
 	sync.Get("/latest", h.GetLatestSyncLog())    // GET    /api/network/sync/latest
 
 	// ── Analytics ───────────────────────────────────────────────────────────
-	api.Get("/network/analytics", h.GetAnalytics()) // GET /api/network/analytics
+	api.Get("/network/analytics", planGate, h.GetAnalytics()) // GET /api/network/analytics
 }
 
 // setupUniboxRoutes registers all Unified Inbox routes (conversations, messages, sync).
-func setupUniboxRoutes(api fiber.Router, db *gorm.DB, workerMgr *workers.WorkerManager) {
+func setupUniboxRoutes(api fiber.Router, planGate fiber.Handler, db *gorm.DB, workerMgr *workers.WorkerManager) {
 	// ── Repositories ────────────────────────────────────────────────────────
 	convRepo := repository.NewConversationRepository(db)
 	msgRepo := repository.NewMessageRepository(db)
@@ -376,7 +378,7 @@ func setupUniboxRoutes(api fiber.Router, db *gorm.DB, workerMgr *workers.WorkerM
 	uh := handler.NewUniboxHandler(uniboxSvc)
 
 	// ── Conversations ───────────────────────────────────────────────────────
-	unibox := api.Group("/unibox")
+	unibox := api.Group("/unibox", planGate)
 	unibox.Get("/conversations", uh.ListConversations())                       // GET    /api/unibox/conversations
 	unibox.Get("/conversations/:id/messages", uh.GetMessages())                // GET    /api/unibox/conversations/:id/messages
 	unibox.Post("/conversations/:id/read", uh.MarkAsRead())                    // POST   /api/unibox/conversations/:id/read
@@ -397,7 +399,7 @@ func setupUniboxRoutes(api fiber.Router, db *gorm.DB, workerMgr *workers.WorkerM
 }
 
 // setupAnalyticsRoutes registers the analytics dashboard endpoint.
-func setupAnalyticsRoutes(api fiber.Router, db *gorm.DB) {
+func setupAnalyticsRoutes(api fiber.Router, planGate fiber.Handler, db *gorm.DB) {
 	// ── Repository ──────────────────────────────────────────────────────────
 	analyticsRepo := repository.NewAnalyticsRepository(db)
 
@@ -408,12 +410,12 @@ func setupAnalyticsRoutes(api fiber.Router, db *gorm.DB) {
 	h := handler.NewAnalyticsHandler(analyticsSvc)
 
 	// ── Route ───────────────────────────────────────────────────────────────
-	api.Get("/analytics", h.GetAnalyticsData()) // GET /api/analytics
+	api.Get("/analytics", planGate, h.GetAnalyticsData()) // GET /api/analytics
 }
 
 // setupQueueRoutes registers queue management endpoints.
-func setupQueueRoutes(api fiber.Router, workerMgr *workers.WorkerManager) {
-	queueGroup := api.Group("/queue")
+func setupQueueRoutes(api fiber.Router, planGate fiber.Handler, workerMgr *workers.WorkerManager) {
+	queueGroup := api.Group("/queue", planGate)
 	qm := workerMgr.QueueManager()
 	queueGroup.Get("/stats", handler.QueueStatsHandler(qm))       // GET  /api/queue/stats
 	queueGroup.Post("/pause", handler.QueuePauseAllHandler(qm))   // POST /api/queue/pause

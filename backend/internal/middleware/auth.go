@@ -155,6 +155,18 @@ func paymentRequired(c *fiber.Ctx) error {
 	return c.Redirect("/pricing", fiber.StatusTemporaryRedirect)
 }
 
+// RequirePlan checks that billing locals (set by RequireSession) show an active plan.
+// Must be used AFTER RequireSession in the middleware chain.
+func RequirePlan() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		active, _ := c.Locals(LocalsPlanActive).(bool)
+		if !active {
+			return paymentRequired(c)
+		}
+		return c.Next()
+	}
+}
+
 func loadSession(cfg *config.Config, db *gorm.DB, c *fiber.Ctx) (models.Session, bool, error) {
 	sessionID := c.Cookies(cfg.SessionCookie)
 	if sessionID == "" {
