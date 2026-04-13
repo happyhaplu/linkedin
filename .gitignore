@@ -10,10 +10,17 @@ backend/server
 backend/*.exe
 backend/.env
 
+# ── Node / Playwright (root) ─────────────────────────────────────────────────
+node_modules/
+package-lock.json
+
 # ── Vue Frontend ─────────────────────────────────────────────────────────────
 frontend/node_modules/
 frontend/dist/
 frontend/*.local
+
+# ── E2E auth state (contains tokens) ─────────────────────────────────────────
+e2e/.auth/
 
 # ── IDE ──────────────────────────────────────────────────────────────────────
 .vscode/settings.json

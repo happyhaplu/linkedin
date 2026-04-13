@@ -419,16 +419,16 @@ func (s *NetworkService) SyncNetworkFromLinkedIn(userID uuid.UUID, req models.St
 	account, err := s.accountRepo.FindByIDAndUser(accountID, userID)
 	if err != nil {
 		s.markSyncFailed(&syncLog, "LinkedIn account not found or unauthorized")
-		return nil, errors.New("LinkedIn account not found or unauthorized")
+		return nil, errors.New("linkedin account not found or unauthorized")
 	}
 	if account.Status != "active" {
 		s.markSyncFailed(&syncLog, "LinkedIn account is not active. Please reconnect your account.")
-		return nil, errors.New("LinkedIn account is not active. Please reconnect your account.")
+		return nil, errors.New("linkedin account is not active — please reconnect your account")
 	}
 	liAt, _ := account.SessionCookies["li_at"].(string)
 	if liAt == "" {
 		s.markSyncFailed(&syncLog, "No valid session found. Please reconnect your account.")
-		return nil, errors.New("No valid session found. Please reconnect your account.")
+		return nil, errors.New("no valid linkedin session found — please reconnect your account")
 	}
 
 	// Invoke the actual sync engine

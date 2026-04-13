@@ -41,7 +41,6 @@ type loginSessionHandle struct {
 	page      playwright.Page
 	accountID string
 	email     string
-	proxy     *ProxyConfig
 	keepAlive bool
 	lastActivity time.Time
 }

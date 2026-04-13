@@ -440,7 +440,7 @@ func (s *LeadService) UpdateCustomField(id, userID uuid.UUID, req models.UpdateC
 	if req.IsRequired != nil {
 		field.IsRequired = *req.IsRequired
 	}
-	if req.Options != nil && len(req.Options) > 0 {
+	if len(req.Options) > 0 {
 		var opts map[string]interface{}
 		if jsonErr := json.Unmarshal(req.Options, &opts); jsonErr == nil {
 			field.Options = models.JSONB(opts)

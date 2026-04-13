@@ -98,13 +98,6 @@ func boolOrDefault(v *bool, def bool) bool {
 	return def
 }
 
-func floatOrDefault(v *float64, def float64) float64 {
-	if v != nil {
-		return *v
-	}
-	return def
-}
-
 func stringOrDefault(v *string, def string) string {
 	if v != nil && *v != "" {
 		return *v
